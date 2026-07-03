@@ -35,14 +35,19 @@ void app_main(void)
         display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
         vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_fill(COLOR_RED); // Draw a blank bitmap (red screen)
+        display_draw_pixel(64, 80, COLOR_RED); // Draw a red pixel at (64, 80)
         vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_fill(COLOR_GREEN); // Draw a blank bitmap (green screen)
+        display_fill_rect(30, 40, 50, 60, COLOR_BLUE); // Draw a blue rectangle
         vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_fill(COLOR_RED); // Draw a blank bitmap (red screen)
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_fill(COLOR_BLUE); // Draw a blank bitmap (blue screen)
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_fill(COLOR_GREEN); // Draw a blank bitmap (green screen)
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_fill(COLOR_BLUE); // Draw a blank bitmap (blue screen)
+        // vTaskDelay(pdMS_TO_TICKS(1000));
         
     }
 }

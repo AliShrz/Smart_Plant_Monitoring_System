@@ -25,3 +25,7 @@ static esp_err_t backlight_off(void);
 esp_err_t display_init(void);
 
 esp_err_t display_fill(uint16_t color);
+
+esp_err_t display_draw_pixel(int x, int y, uint16_t color);
+
+esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color);

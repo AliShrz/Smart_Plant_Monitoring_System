@@ -33,8 +33,8 @@ static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
 
 #define DISPLAY_BUFFER_LINES    20
-
-static uint16_t display_buffer[LCD_H_RES * DISPLAY_BUFFER_LINES];
+#define DISPLAY_BUFFER_SIZE (LCD_H_RES * DISPLAY_BUFFER_LINES)
+static uint16_t display_buffer[DISPLAY_BUFFER_SIZE];
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -166,16 +166,16 @@ esp_err_t display_fill(uint16_t color)
     }
 
     uint16_t lcd_color = display_format_color(color);
-    
-    for (size_t i = 0; i < LCD_H_RES * DISPLAY_BUFFER_LINES; i++)
+
+    for (size_t i = 0; i < DISPLAY_BUFFER_SIZE; i++)
     {
         display_buffer[i] = lcd_color;
     }
-    int current_y = 0;
+    size_t current_y = 0;
 
     while (current_y < LCD_V_RES)
     {
-        int lines_to_send = MIN(DISPLAY_BUFFER_LINES, LCD_V_RES - current_y);
+        size_t lines_to_send = MIN(DISPLAY_BUFFER_LINES, LCD_V_RES - current_y);
         esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle,0, current_y, LCD_H_RES, current_y + lines_to_send, display_buffer);
         if (ret != ESP_OK) 
         {
@@ -184,5 +184,58 @@ esp_err_t display_fill(uint16_t color)
         current_y += lines_to_send;
     }
 
+    return ESP_OK;
+}
+
+esp_err_t display_draw_pixel(int x, int y, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (x < 0 || x >= LCD_H_RES || y < 0 || y >= LCD_V_RES)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+    uint16_t lcd_color = display_format_color(color);
+
+    esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + 1, y + 1, &lcd_color);
+    return ret;
+}
+
+esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+    
+    if (x_start < 0 || x_start >= LCD_H_RES || y_start < 0 || y_start >= LCD_V_RES || x_end < 0 || x_end >= LCD_H_RES || y_end < 0 || y_end >= LCD_V_RES || x_end <= x_start || y_end <= y_start)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    uint16_t lcd_color = display_format_color(color);
+    size_t rect_width = x_end - x_start;
+    size_t current_y = y_start;
+
+    while (current_y < y_end)
+    {
+        size_t lines_to_send = MIN(DISPLAY_BUFFER_LINES, y_end - current_y);
+        size_t pixels_to_fill = rect_width * lines_to_send;
+
+        for (size_t i = 0; i < pixels_to_fill; i++)
+        {
+            display_buffer[i] = lcd_color;
+        }
+        
+        esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle,x_start, current_y,x_end, current_y + lines_to_send, display_buffer);
+        if (ret != ESP_OK) 
+        {
+            return ret;
+        }
+        current_y += lines_to_send;
+    }
     return ESP_OK;
 }
