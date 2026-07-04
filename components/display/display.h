@@ -43,3 +43,11 @@ esp_err_t display_draw_line_int(int x_start, int y_start, int x_end, int y_end, 
 esp_err_t display_draw_line_bresenham(int x_start, int y_start, int x_end, int y_end, uint16_t color);
 
 esp_err_t display_draw_line(int x_start, int y_start, int x_end, int y_end, uint16_t color);
+
+static esp_err_t display_draw_circle_points(int x_center, int y_center, int x, int y, uint16_t color);
+
+esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t color);
+
+static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, int y, uint16_t color);
+
+esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t color);

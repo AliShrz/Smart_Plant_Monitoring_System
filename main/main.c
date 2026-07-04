@@ -93,6 +93,18 @@ void app_main(void)
         display_draw_line(50, 10, 100, 140, COLOR_RED); // Draw a red diagonal line
         vTaskDelay(pdMS_TO_TICKS(1000));
 
+        display_draw_circle(64, 80, 30, COLOR_ORANGE); // Draw an orange circle
+        vTaskDelay(pdMS_TO_TICKS(200));
+
+        for (int radius = 30; radius > 15; radius--)
+        {
+            display_draw_circle(64, 80, radius, COLOR_ORANGE); // Draw an orange circle
+            vTaskDelay(pdMS_TO_TICKS(100));
+        }
+
+        display_fill_circle(64, 80, 10, COLOR_GREEN); // Draw a green circle
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
         // display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
         // vTaskDelay(pdMS_TO_TICKS(1000));
     }

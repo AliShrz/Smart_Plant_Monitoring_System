@@ -1,3 +1,11 @@
+// to do: 
+// display_draw_circle(), display_fill_circle(), 
+// display_draw_triangle(), display_fill_triangle(),
+// display_draw_image(), 
+// display_draw_char(), 
+// display_print()
+
+
 #include "display.h"
 
 #include "driver/spi_master.h"
@@ -244,12 +252,26 @@ esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint
 
 esp_err_t display_draw_hline(int x_start, int y, int x_end, uint16_t color)
 {
-    return display_fill_rect(x_start, y, x_end, y + 1, color);
+    if(x_start == x_end)
+    {
+        return display_draw_pixel(x_start, y, color);
+    }
+    else
+    {
+        return display_fill_rect(x_start, y, x_end, y + 1, color);
+    }
 }
 
 esp_err_t display_draw_vline(int x, int y_start, int y_end, uint16_t color)
 {
-    return display_fill_rect(x, y_start, x + 1, y_end, color);
+    if(x == x + 1)
+    {
+        return display_draw_pixel(x, y_start, color);
+    }
+    else
+    {
+        return display_fill_rect(x, y_start, x + 1, y_end, color);
+    }
 }
 
 esp_err_t display_draw_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color)
@@ -270,8 +292,6 @@ esp_err_t display_draw_rect(int x_start, int y_start, int x_end, int y_end, uint
 
     return ESP_OK;
 }
-
-// display_draw_line(), display_draw_circle(), display_fill_circle(), display_draw_image(), display_draw_char(), display_print()
 
 
 esp_err_t display_draw_line_dda(int x_start, int y_start, int x_end, int y_end, uint16_t color)
@@ -410,4 +430,144 @@ esp_err_t display_draw_line_bresenham(int x_start, int y_start, int x_end, int y
 esp_err_t display_draw_line(int x_start, int y_start, int x_end, int y_end, uint16_t color)
 {
     return display_draw_line_bresenham(x_start, y_start, x_end, y_end, color);
+}
+
+static esp_err_t display_draw_circle_points(int x_center, int y_center, int x, int y, uint16_t color)
+{
+    esp_err_t ret;
+
+    ret = display_draw_pixel(x_center + x, y_center + y, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center - x, y_center + y, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center + x, y_center - y, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center - x, y_center - y, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center + y, y_center + x, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center - y, y_center + x, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center + y, y_center - x, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_pixel(x_center - y, y_center - x, color);
+    if (ret != ESP_OK) return ret;
+
+    return ESP_OK;
+}
+
+esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (radius < 0)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (radius == 0)
+    {
+        return display_draw_pixel(x_center, y_center, color);
+    }
+
+    int d = 3 - 2 * radius;    
+    int x = 0;
+    int y = radius;
+
+
+    while(x <= y)
+    {
+        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, color);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+
+        if(d < 0)
+        {
+            d += 4 * x + 6;
+        }
+        else
+        {
+            d += 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+
+    }
+    
+    return ESP_OK;
+}
+
+static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, int y, uint16_t color)
+{
+
+    esp_err_t ret;
+
+    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, color);
+    if (ret != ESP_OK) return ret;
+
+    return ESP_OK;
+}
+
+esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (radius < 0)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (radius == 0)
+    {
+        return display_draw_pixel(x_center, y_center, color);
+    }
+
+    int d = 3-2 * radius;
+    int x = 0;
+    int y = radius;
+
+    while(x <= y)
+    {
+        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, color);
+        if (ret != ESP_OK) 
+        {
+            return ret;
+        }
+
+        if(d < 0)
+        {
+            d += 4 * x + 6;
+        }
+        else
+        {
+            d += 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+
+    }
+    
+    return ESP_OK;
 }
