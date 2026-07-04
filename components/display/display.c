@@ -303,3 +303,111 @@ esp_err_t display_draw_line_dda(int x_start, int y_start, int x_end, int y_end, 
 
     return ESP_OK;
 }
+
+esp_err_t display_draw_line_int(int x_start, int y_start, int x_end, int y_end, uint16_t color)
+{
+    int dx = x_end - x_start;
+    int dy = y_end - y_start;
+    uint16_t steps = MAX(abs(dx), abs(dy));
+
+    if (steps == 0)
+    {
+        return display_draw_pixel(x_start, y_start, color);
+    }
+
+    int error = 0;
+    int x = x_start;
+    int y = y_start;
+    int sx = (x_end >= x_start) ? 1 : -1;
+    int sy = (y_end >= y_start) ? 1 : -1;
+
+    display_draw_pixel(x, y, color);
+
+    for(int i = 0; i <= steps; i++)
+    {
+        if (abs(dx) > abs(dy))
+        {
+            x += sx;
+            error += abs(dy);
+            if(error >= abs(dx))
+            {
+                y += sy;
+                error -= abs(dx);
+            }
+        }
+        else
+        {
+            y += sy;
+            error += abs(dx);
+            if(error >= abs(dy))
+            {
+                x += sx;
+                error -= abs(dy);
+            }
+        }
+        esp_err_t ret = display_draw_pixel(x, y, color);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+    }
+
+    return ESP_OK;
+}
+
+
+esp_err_t display_draw_line_bresenham(int x_start, int y_start, int x_end, int y_end, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (x_start == x_end && y_start == y_end)
+    {
+        return display_draw_pixel(x_start, y_start, color);
+    }
+
+    int dx = abs(x_end - x_start);
+    int dy = abs(y_end - y_start);
+
+    int error = dx - dy;
+    int x = x_start;
+    int y = y_start;
+    int sx = (x_start < x_end) ? 1 : -1;
+    int sy = (y_start < y_end) ? 1 : -1;
+
+    esp_err_t ret = display_draw_pixel(x, y, color);
+    if (ret != ESP_OK)
+    {
+        return ret;
+    }
+
+    while (x != x_end || y != y_end)
+    {
+        int error2 = error << 1;
+        if (error2 > -dy)
+        {
+            error -= dy;
+            x += sx;
+        }
+        if (error2 < dx)
+        {
+            error += dx;
+            y += sy;
+        }
+        esp_err_t ret = display_draw_pixel(x, y, color);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+    }
+
+    return ESP_OK;
+}
+
+
+esp_err_t display_draw_line(int x_start, int y_start, int x_end, int y_end, uint16_t color)
+{
+    return display_draw_line_bresenham(x_start, y_start, x_end, y_end, color);
+}

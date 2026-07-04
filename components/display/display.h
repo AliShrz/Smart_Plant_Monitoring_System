@@ -37,3 +37,9 @@ esp_err_t display_draw_vline(int x, int y_start, int y_end, uint16_t color);
 esp_err_t display_draw_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color);
 
 esp_err_t display_draw_line_dda(int x_start, int y_start, int x_end, int y_end, uint16_t color);
+
+esp_err_t display_draw_line_int(int x_start, int y_start, int x_end, int y_end, uint16_t color);
+
+esp_err_t display_draw_line_bresenham(int x_start, int y_start, int x_end, int y_end, uint16_t color);
+
+esp_err_t display_draw_line(int x_start, int y_start, int x_end, int y_end, uint16_t color);

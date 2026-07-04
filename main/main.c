@@ -12,6 +12,12 @@
 #define COLOR_RED   0xF800
 #define COLOR_GREEN 0x07E0
 #define COLOR_BLUE  0x001F
+#define COLOR_YELLOW 0xFFE0
+#define COLOR_CYAN 0x07FF
+#define COLOR_MAGENTA 0xF81F
+#define COLOR_ORANGE 0xFD20
+#define COLOR_PURPLE 0x780F
+
 
 
 void app_main(void)
@@ -51,34 +57,43 @@ void app_main(void)
         // display_fill(COLOR_BLUE); // Draw a blank bitmap (blue screen)
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_line_dda(0, 0, 127, 159, COLOR_RED); // Draw a red diagonal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_line_dda(0, 0, 127, 159, COLOR_RED); // Draw a red diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_line_dda(0, 159, 127, 0, COLOR_GREEN); // Draw a green diagonal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_line_dda(0, 159, 127, 0, COLOR_GREEN); // Draw a green diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_line_dda(0, 80, 127, 80, COLOR_BLUE); // Draw a blue diagonal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_line_dda(0, 80, 127, 80, COLOR_BLUE); // Draw a blue diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_line_dda(64, 0, 64, 159, COLOR_BLACK); // Draw a black diagonal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_line_dda(64, 0, 64, 159, COLOR_BLACK); // Draw a black diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_pixel(64, 80, COLOR_RED); // Draw a red pixel at (64, 80)
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_pixel(64, 80, COLOR_RED); // Draw a red pixel at (64, 80)
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_fill_rect(30, 40, 50, 60, COLOR_BLUE); // Draw a blue rectangle
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_fill_rect(30, 40, 50, 60, COLOR_BLUE); // Draw a blue rectangle
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_hline(10, 100, 100, COLOR_GREEN); // Draw a green horizontal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_hline(10, 100, 100, COLOR_GREEN); // Draw a green horizontal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_vline(80, 30, 120, COLOR_RED); // Draw a red vertical line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_vline(80, 30, 120, COLOR_RED); // Draw a red vertical line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_rect(40, 50, 80, 90, COLOR_BLUE); // Draw a blue rectangle outline
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_rect(40, 50, 80, 90, COLOR_BLUE); // Draw a blue rectangle outline
+        // vTaskDelay(pdMS_TO_TICKS(1000));
         
-        display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
+        // display_draw_line_int(0, 10, 127, 149, COLOR_MAGENTA); // Draw a red diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        display_draw_line_int(50, 0, 100, 130, COLOR_PURPLE); // Draw a purple diagonal line
         vTaskDelay(pdMS_TO_TICKS(1000));
+
+        display_draw_line(50, 10, 100, 140, COLOR_RED); // Draw a red diagonal line
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
+        // vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
