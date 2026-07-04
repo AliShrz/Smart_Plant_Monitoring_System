@@ -5,6 +5,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_st7735.h"
 #include "driver/gpio.h"
+#include "math.h"
 // #include "esp_check.h"
 
 // SPI Host
@@ -37,6 +38,7 @@ static esp_lcd_panel_handle_t panel_handle = NULL;
 static uint16_t display_buffer[DISPLAY_BUFFER_SIZE];
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 static esp_err_t spi_bus_init(void)
 {
@@ -237,5 +239,67 @@ esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint
         }
         current_y += lines_to_send;
     }
+    return ESP_OK;
+}
+
+esp_err_t display_draw_hline(int x_start, int y, int x_end, uint16_t color)
+{
+    return display_fill_rect(x_start, y, x_end, y + 1, color);
+}
+
+esp_err_t display_draw_vline(int x, int y_start, int y_end, uint16_t color)
+{
+    return display_fill_rect(x, y_start, x + 1, y_end, color);
+}
+
+esp_err_t display_draw_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color)
+{
+    esp_err_t ret;
+
+    ret = display_draw_hline(x_start, y_start, x_end, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_hline(x_start, y_end - 1, x_end, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_vline(x_start, y_start, y_end, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_vline(x_end - 1, y_start, y_end, color);
+    if (ret != ESP_OK) return ret;
+
+    return ESP_OK;
+}
+
+// display_draw_line(), display_draw_circle(), display_fill_circle(), display_draw_image(), display_draw_char(), display_print()
+
+
+esp_err_t display_draw_line_dda(int x_start, int y_start, int x_end, int y_end, uint16_t color)
+{
+    int dx = x_end - x_start;
+    int dy = y_end - y_start;
+    uint16_t steps = MAX(abs(dx), abs(dy));
+
+    if (steps == 0)
+    {
+        return display_draw_pixel(x_start, y_start, color);
+    }
+
+    float x_increment = dx / (float)steps;
+    float y_increment = dy / (float)steps;
+
+    float x = x_start;
+    float y = y_start;
+    for (int i = 0; i <= steps; i++)
+    {
+        x += x_increment;
+        y += y_increment;
+        esp_err_t ret = display_draw_pixel(lroundf(x), lroundf(y), color);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+    }
+
     return ESP_OK;
 }

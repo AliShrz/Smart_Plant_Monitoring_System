@@ -29,3 +29,11 @@ esp_err_t display_fill(uint16_t color);
 esp_err_t display_draw_pixel(int x, int y, uint16_t color);
 
 esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color);
+
+esp_err_t display_draw_hline(int x_start, int y, int x_end, uint16_t color);
+
+esp_err_t display_draw_vline(int x, int y_start, int y_end, uint16_t color);
+
+esp_err_t display_draw_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color);
+
+esp_err_t display_draw_line_dda(int x_start, int y_start, int x_end, int y_end, uint16_t color);
