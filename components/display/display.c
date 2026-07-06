@@ -252,19 +252,16 @@ esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint
 
 esp_err_t display_draw_hline(int x_start, int y, int x_end, uint16_t color)
 {
-    if(x_start == x_end)
+    if (x_start == x_end)
     {
         return display_draw_pixel(x_start, y, color);
     }
-    else
-    {
-        return display_fill_rect(x_start, y, x_end, y + 1, color);
-    }
+    return display_fill_rect(x_start, y, x_end, y + 1, color);
 }
 
 esp_err_t display_draw_vline(int x, int y_start, int y_end, uint16_t color)
 {
-    if(x == x + 1)
+    if(y_start == y_end)
     {
         return display_draw_pixel(x, y_start, color);
     }
@@ -405,7 +402,7 @@ esp_err_t display_draw_line_bresenham(int x_start, int y_start, int x_end, int y
 
     while (x != x_end || y != y_end)
     {
-        int error2 = error << 1;
+        int error2 = error << 1; // equivalent to error * 2
         if (error2 > -dy)
         {
             error -= dy;
@@ -569,5 +566,177 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 
     }
     
+    return ESP_OK;
+}
+
+esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color)
+{
+    esp_err_t ret;
+
+    ret = display_draw_line(x1, y1, x2, y2, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(x2, y2, x3, y3, color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(x3, y3, x1, y1, color);
+    if (ret != ESP_OK) return ret;
+
+    return ESP_OK;
+}
+
+typedef struct
+{
+    int x;
+    int y;
+} display_point_t;
+
+static inline void swap_points(display_point_t *a, display_point_t *b)
+{
+    display_point_t temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+
+static void edge_update(
+    int *x,
+    int *error,
+    int dx,
+    int dy,
+    int sx)
+{
+    if (dy <= 0)
+    {
+        return;
+    }
+
+    *error += dx;
+
+    while (*error >= dy)
+    {
+        *error -= dy;
+        *x += sx;
+    }
+}
+
+esp_err_t display_fill_triangle(int x1, int y1,
+                                int x2, int y2,
+                                int x3, int y3,
+                                uint16_t color)
+{
+    // Sort vertices by descending y
+    display_point_t p1 = {x1, y1};
+    display_point_t p2 = {x2, y2};
+    display_point_t p3 = {x3, y3};
+
+    if (p1.y < p2.y) swap_points(&p1, &p2);
+    if (p2.y < p3.y) swap_points(&p2, &p3);
+    if (p1.y < p2.y) swap_points(&p1, &p2);
+
+    // ---------- Flat Top ----------
+    if (p1.y == p2.y)
+    {
+        if (p1.x > p2.x)
+            swap_points(&p1, &p2);
+
+        int y = p1.y;
+
+        int x_left = p1.x;
+        int dx_left = abs(p3.x - p1.x);
+        int dy_left = abs(p3.y - p1.y);
+        int error_left = 0;
+        int sx_left = (p1.x < p3.x) ? 1 : -1;
+
+        int x_right = p2.x;
+        int dx_right = abs(p3.x - p2.x);
+        int dy_right = abs(p3.y - p2.y);
+        int error_right = 0;
+        int sx_right = (p2.x < p3.x) ? 1 : -1;
+
+        while (y >= p3.y)
+        {
+            esp_err_t ret = display_draw_hline(
+                MIN(x_left, x_right),
+                y,
+                MAX(x_left, x_right),
+                color);
+
+            if (ret != ESP_OK)
+                return ret;
+
+            edge_update(&x_left, &error_left, dx_left, dy_left, sx_left);
+            edge_update(&x_right, &error_right, dx_right, dy_right, sx_right);
+
+            y--;
+        }
+
+        return ESP_OK;
+    }
+
+    // ---------- General + Flat Bottom ----------
+
+    int y = p1.y;
+
+    int x_left = p1.x;
+    int dx_left = abs(p2.x - p1.x);
+    int dy_left = abs(p2.y - p1.y);
+    int error_left = 0;
+    int sx_left = (p1.x < p2.x) ? 1 : -1;
+
+    int x_right = p1.x;
+    int dx_right = abs(p3.x - p1.x);
+    int dy_right = abs(p3.y - p1.y);
+    int error_right = 0;
+    int sx_right = (p1.x < p3.x) ? 1 : -1;
+
+    while (y >= p2.y)
+    {
+        esp_err_t ret = display_draw_hline(
+            MIN(x_left, x_right),
+            y,
+            MAX(x_left, x_right),
+            color);
+
+        if (ret != ESP_OK)
+            return ret;
+
+        edge_update(&x_left, &error_left, dx_left, dy_left, sx_left);
+        edge_update(&x_right, &error_right, dx_right, dy_right, sx_right);
+
+        y--;
+    }
+
+    // ---------- Flat Bottom ----------
+    if (p2.y == p3.y)
+    {
+        return ESP_OK;
+    }
+
+    // ---------- Lower Half ----------
+
+    x_left = p2.x;
+    dx_left = abs(p3.x - p2.x);
+    dy_left = abs(p3.y - p2.y);
+    error_left = 0;
+    sx_left = (p2.x < p3.x) ? 1 : -1;
+
+    while (y >= p3.y)
+    {
+        esp_err_t ret = display_draw_hline(
+            MIN(x_left, x_right),
+            y,
+            MAX(x_left, x_right),
+            color);
+
+        if (ret != ESP_OK)
+            return ret;
+
+        edge_update(&x_left, &error_left, dx_left, dy_left, sx_left);
+        edge_update(&x_right, &error_right, dx_right, dy_right, sx_right);
+
+        y--;
+    }
+
     return ESP_OK;
 }

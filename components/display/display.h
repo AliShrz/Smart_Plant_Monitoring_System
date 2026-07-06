@@ -51,3 +51,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
 static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, int y, uint16_t color);
 
 esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t color);
+
+esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color);
+
+esp_err_t display_fill_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color);

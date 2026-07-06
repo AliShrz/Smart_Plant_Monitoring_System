@@ -87,25 +87,42 @@ void app_main(void)
         // display_draw_line_int(0, 10, 127, 149, COLOR_MAGENTA); // Draw a red diagonal line
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_line_int(50, 0, 100, 130, COLOR_PURPLE); // Draw a purple diagonal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_line_int(50, 0, 100, 130, COLOR_PURPLE); // Draw a purple diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_line(50, 10, 100, 140, COLOR_RED); // Draw a red diagonal line
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // display_draw_line(50, 10, 100, 140, COLOR_RED); // Draw a red diagonal line
+        // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_circle(64, 80, 30, COLOR_ORANGE); // Draw an orange circle
-        vTaskDelay(pdMS_TO_TICKS(200));
+        // display_draw_circle(64, 80, 30, COLOR_ORANGE); // Draw an orange circle
+        // vTaskDelay(pdMS_TO_TICKS(200));
 
-        for (int radius = 30; radius > 15; radius--)
-        {
-            display_draw_circle(64, 80, radius, COLOR_ORANGE); // Draw an orange circle
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
+        // for (int radius = 30; radius > 15; radius--)
+        // {
+        //     display_draw_circle(64, 80, radius, COLOR_ORANGE); // Draw an orange circle
+        //     vTaskDelay(pdMS_TO_TICKS(100));
+        // }
 
         display_fill_circle(64, 80, 10, COLOR_GREEN); // Draw a green circle
         vTaskDelay(pdMS_TO_TICKS(1000));
 
+        display_fill_triangle(50, 50, 100, 100, 75, 125, COLOR_CYAN); // Draw a cyan filled triangle
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        display_draw_triangle(50, 50, 100, 100, 75, 125, COLOR_BLUE); // Draw a blue triangle
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+
+
         // display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_draw_pixel(20,20,COLOR_RED);
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_draw_hline(20,30,100,COLOR_RED);
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_fill_rect(20,40,100,50,COLOR_RED);
         // vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
