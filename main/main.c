@@ -1,8 +1,9 @@
 #include <stdio.h>
 
-// #include "soil_moisture.h"
+#include "soil_moisture.h"
 #include "display.h"
 // #include "esp_lcd_panel_ops.h"
+#include "display_font_5x7.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -102,16 +103,20 @@ void app_main(void)
         //     vTaskDelay(pdMS_TO_TICKS(100));
         // }
 
-        display_fill_circle(64, 80, 10, COLOR_GREEN); // Draw a green circle
+        // display_fill_circle(64, 80, 10, COLOR_GREEN); // Draw a green circle
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_fill_triangle(50, 50, 100, 100, 75, 125, COLOR_CYAN); // Draw a cyan filled triangle
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        // display_draw_triangle(50, 50, 100, 100, 75, 125, COLOR_BLUE); // Draw a blue triangle
+        // vTaskDelay(pdMS_TO_TICKS(1000));
+
+        display_draw_char(15, 15, 'A', &display_font_5x7, COLOR_BLUE, COLOR_WHITE); // Draw character 'A' in yellow
         vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_fill_triangle(50, 50, 100, 100, 75, 125, COLOR_CYAN); // Draw a cyan filled triangle
+        display_draw_char(21, 15, 'B', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 'B' in yellow
         vTaskDelay(pdMS_TO_TICKS(1000));
-
-        display_draw_triangle(50, 50, 100, 100, 75, 125, COLOR_BLUE); // Draw a blue triangle
-        vTaskDelay(pdMS_TO_TICKS(1000));
-
-
 
         // display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
         // vTaskDelay(pdMS_TO_TICKS(1000));

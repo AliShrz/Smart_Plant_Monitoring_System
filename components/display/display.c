@@ -1,12 +1,12 @@
 // to do: 
-// display_draw_circle(), display_fill_circle(), 
-// display_draw_triangle(), display_fill_triangle(),
+
 // display_draw_image(), 
 // display_draw_char(), 
 // display_print()
 
 
 #include "display.h"
+// #include "display_font.c"
 
 #include "driver/spi_master.h"
 #include "esp_lcd_io_spi.h"
@@ -14,6 +14,8 @@
 #include "esp_lcd_st7735.h"
 #include "driver/gpio.h"
 #include "math.h"
+
+// #include "display_font_5x7.h"
 // #include "esp_check.h"
 
 // SPI Host
@@ -466,6 +468,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
     {
         return ESP_ERR_INVALID_STATE;
     }
+    const uint16_t lcd_color = display_format_color(color);
 
     if (radius < 0)
     {
@@ -473,7 +476,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
     }
     if (radius == 0)
     {
-        return display_draw_pixel(x_center, y_center, color);
+        return display_draw_pixel(x_center, y_center, lcd_color);
     }
 
     int d = 3 - 2 * radius;    
@@ -483,7 +486,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
 
     while(x <= y)
     {
-        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, color);
+        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, lcd_color);
         if (ret != ESP_OK)
         {
             return ret;
@@ -509,17 +512,18 @@ static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, in
 {
 
     esp_err_t ret;
+    const uint16_t lcd_color = display_format_color(color);
 
-    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, color);
+    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, lcd_color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, color);
+    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, lcd_color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, color);
+    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, lcd_color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, color);
+    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, lcd_color);
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
@@ -532,13 +536,16 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
         return ESP_ERR_INVALID_STATE;
     }
 
+    const uint16_t lcd_color = display_format_color(color);
+
     if (radius < 0)
     {
         return ESP_ERR_INVALID_ARG;
     }
+
     if (radius == 0)
     {
-        return display_draw_pixel(x_center, y_center, color);
+        return display_draw_pixel(x_center, y_center, lcd_color);
     }
 
     int d = 3-2 * radius;
@@ -547,7 +554,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 
     while(x <= y)
     {
-        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, color);
+        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, lcd_color);
         if (ret != ESP_OK) 
         {
             return ret;
@@ -572,14 +579,15 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color)
 {
     esp_err_t ret;
+    const uint16_t lcd_color = display_format_color(color);
 
-    ret = display_draw_line(x1, y1, x2, y2, color);
+    ret = display_draw_line(x1, y1, x2, y2, lcd_color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_line(x2, y2, x3, y3, color);
+    ret = display_draw_line(x2, y2, x3, y3, lcd_color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_line(x3, y3, x1, y1, color);
+    ret = display_draw_line(x3, y3, x1, y1, lcd_color);
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
@@ -634,6 +642,8 @@ esp_err_t display_fill_triangle(int x1, int y1,
     if (p2.y < p3.y) swap_points(&p2, &p3);
     if (p1.y < p2.y) swap_points(&p1, &p2);
 
+    const uint16_t lcd_color = display_format_color(color);
+
     // ---------- Flat Top ----------
     if (p1.y == p2.y)
     {
@@ -660,7 +670,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
                 MIN(x_left, x_right),
                 y,
                 MAX(x_left, x_right),
-                color);
+                lcd_color);
 
             if (ret != ESP_OK)
                 return ret;
@@ -689,14 +699,14 @@ esp_err_t display_fill_triangle(int x1, int y1,
     int dy_right = abs(p3.y - p1.y);
     int error_right = 0;
     int sx_right = (p1.x < p3.x) ? 1 : -1;
-
+    
     while (y >= p2.y)
     {
         esp_err_t ret = display_draw_hline(
             MIN(x_left, x_right),
             y,
             MAX(x_left, x_right),
-            color);
+            lcd_color);
 
         if (ret != ESP_OK)
             return ret;
@@ -727,7 +737,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
             MIN(x_left, x_right),
             y,
             MAX(x_left, x_right),
-            color);
+            lcd_color);
 
         if (ret != ESP_OK)
             return ret;
@@ -739,4 +749,38 @@ esp_err_t display_fill_triangle(int x1, int y1,
     }
 
     return ESP_OK;
+}
+
+esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color)
+{
+    assert(font != NULL);
+
+    const uint8_t *glyph = display_font_get_glyph(font, c);
+
+    if (glyph == NULL)
+    {
+        glyph = display_font_get_glyph(font, '?');
+
+        if (glyph == NULL)
+        {
+            return ESP_ERR_INVALID_ARG;
+        }
+    }
+    const uint16_t lcd_color = display_format_color(color);
+    const uint16_t lcd_background = display_format_color(background_color);
+
+    // uint16_t buffer[font->width * font->height];
+    static uint16_t buffer[5 * 7];
+
+    for (int row = 0; row < font->height; row++)
+    {
+        for (int col = 0; col < font->width; col++)
+        {
+            bool pixel = ((glyph[col] >> row) & 0x01U);
+
+            buffer[row * font->width + col] = pixel ? lcd_color : lcd_background;
+        }
+    }
+
+    return esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + font->width, y + font->height, buffer);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "esp_err.h"
 #include "esp_check.h"
+#include "display_font.h"
 
 static esp_err_t spi_bus_init(void);
 
@@ -55,3 +56,5 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color);
 
 esp_err_t display_fill_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color);
+
+esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color);
