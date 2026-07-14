@@ -1,13 +1,12 @@
 // to do: 
 
 // display_draw_image(), 
-// display_draw_char(), 
 // display_print()
 
 
 #include "display.h"
 // #include "display_font.c"
-
+#include "esp_lcd_panel_io.h"
 #include "driver/spi_master.h"
 #include "esp_lcd_io_spi.h"
 #include "esp_lcd_panel_ops.h"
@@ -38,7 +37,7 @@
 #define LCD_CMD_BITS 8
 #define LCD_PARAM_BITS 8
 #define LCD_SPI_MODE 0
-#define LCD_TRANSACTION_QUEUE_DEPTH 2
+#define LCD_TRANSACTION_QUEUE_DEPTH 1
 
 static esp_lcd_panel_io_handle_t io_handle = NULL;
 static esp_lcd_panel_handle_t panel_handle = NULL;
@@ -49,6 +48,17 @@ static uint16_t display_buffer[DISPLAY_BUFFER_SIZE];
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+static volatile bool display_transfer_done = true;
+
+static bool display_color_transfer_done(
+    esp_lcd_panel_io_handle_t panel_io,
+    esp_lcd_panel_io_event_data_t *edata,
+    void *user_ctx)
+{
+    display_transfer_done = true;
+    return false;
+}
 
 static esp_err_t spi_bus_init(void)
 {
@@ -76,9 +86,26 @@ static esp_err_t lcd_io_init(void)
         .lcd_param_bits = LCD_PARAM_BITS,
         .spi_mode = LCD_SPI_MODE,
         .trans_queue_depth = LCD_TRANSACTION_QUEUE_DEPTH,
-        };
-    return esp_lcd_new_panel_io_spi(LCD_HOST, &io_config, &io_handle);
+    };
 
+    esp_err_t ret = esp_lcd_new_panel_io_spi(
+        LCD_HOST,
+        &io_config,
+        &io_handle);
+
+    if (ret != ESP_OK)
+    {
+        return ret;
+    }
+
+    esp_lcd_panel_io_callbacks_t callbacks = {
+        .on_color_trans_done = display_color_transfer_done,
+    };
+
+    return esp_lcd_panel_io_register_event_callbacks(
+        io_handle,
+        &callbacks,
+        NULL);
 }
 
 static esp_err_t lcd_panel_init(void)
@@ -170,6 +197,18 @@ static inline uint16_t display_format_color(uint16_t color)
     return (color >>8) | (color << 8);
 }
 
+static inline void display_wait_transfer_done(void)
+{
+    while (!display_transfer_done)
+    {
+    }
+}
+
+static inline void display_begin_transfer(void)
+{
+    display_transfer_done = false;
+}
+
 esp_err_t display_fill(uint16_t color)
 {
     if (panel_handle == NULL)
@@ -187,6 +226,9 @@ esp_err_t display_fill(uint16_t color)
 
     while (current_y < LCD_V_RES)
     {
+        display_wait_transfer_done();
+        display_begin_transfer();
+
         size_t lines_to_send = MIN(DISPLAY_BUFFER_LINES, LCD_V_RES - current_y);
         esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle,0, current_y, LCD_H_RES, current_y + lines_to_send, display_buffer);
         if (ret != ESP_OK) 
@@ -211,7 +253,8 @@ esp_err_t display_draw_pixel(int x, int y, uint16_t color)
         return ESP_ERR_INVALID_ARG;
     }
     uint16_t lcd_color = display_format_color(color);
-
+    display_wait_transfer_done();
+    display_begin_transfer();
     esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + 1, y + 1, &lcd_color);
     return ret;
 }
@@ -237,11 +280,15 @@ esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint
         size_t lines_to_send = MIN(DISPLAY_BUFFER_LINES, y_end - current_y);
         size_t pixels_to_fill = rect_width * lines_to_send;
 
+        display_wait_transfer_done();
+
         for (size_t i = 0; i < pixels_to_fill; i++)
         {
             display_buffer[i] = lcd_color;
         }
         
+        display_begin_transfer();
+
         esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle,x_start, current_y,x_end, current_y + lines_to_send, display_buffer);
         if (ret != ESP_OK) 
         {
@@ -770,17 +817,24 @@ esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, u
     const uint16_t lcd_background = display_format_color(background_color);
 
     // uint16_t buffer[font->width * font->height];
-    static uint16_t buffer[5 * 7];
+    uint16_t *buffer = display_buffer;
+    // static uint16_t buffer[5 * 7];
+
+    display_wait_transfer_done();
 
     for (int row = 0; row < font->height; row++)
     {
         for (int col = 0; col < font->width; col++)
         {
             bool pixel = ((glyph[col] >> row) & 0x01U);
-
             buffer[row * font->width + col] = pixel ? lcd_color : lcd_background;
         }
     }
 
-    return esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + font->width, y + font->height, buffer);
+    display_begin_transfer();
+
+    esp_err_t ret = esp_lcd_panel_draw_bitmap(panel_handle, x, y, x + font->width, y + font->height, buffer);
+    return ret;
 }
+
+

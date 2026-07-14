@@ -11,6 +11,7 @@ typedef struct
     uint8_t height;
     char first_char;
     char last_char;
+    uint8_t spacing; // Optional spacing between characters (in pixels)
     const uint8_t *bitmap;
 } display_font_t;
 
