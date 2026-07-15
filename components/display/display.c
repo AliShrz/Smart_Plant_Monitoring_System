@@ -14,9 +14,14 @@
 #include "esp_lcd_st7735.h"
 #include "driver/gpio.h"
 #include "math.h"
+#include <stdarg.h>
 
 // #include "display_font_5x7.h"
 // #include "esp_check.h"
+
+#include "esp_log.h"
+
+static const char *TAG = "display";
 
 // SPI Host
 #define LCD_HOST    SPI2_HOST
@@ -46,6 +51,7 @@ static esp_lcd_panel_handle_t panel_handle = NULL;
 #define DISPLAY_BUFFER_LINES    20
 #define DISPLAY_BUFFER_SIZE (LCD_H_RES * DISPLAY_BUFFER_LINES)
 static uint16_t display_buffer[DISPLAY_BUFFER_SIZE];
+#define DISPLAY_PRINTF_BUFFER_SIZE 128
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -913,4 +919,30 @@ esp_err_t display_draw_string( int x, int y, const char *text, const display_fon
     }
     return ESP_OK;
 
+}
+
+esp_err_t display_printf( int x, int y, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode, const char *format, ...)
+{
+    assert(format != NULL);
+    assert(font != NULL);
+    
+    char buffer[DISPLAY_PRINTF_BUFFER_SIZE];
+
+    va_list args;
+
+    va_start(args, format);
+
+    int length = vsnprintf(buffer, sizeof(buffer), format, args);
+
+    if (length < 0)
+    {
+        return ESP_FAIL;
+    }
+
+    if (length >= sizeof(buffer))
+    {
+        return ESP_ERR_NO_MEM;
+    }
+    va_end(args);
+    return display_draw_string( x, y, buffer, font, color, background_color, background_mode);
 }
