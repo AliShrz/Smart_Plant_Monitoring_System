@@ -2,6 +2,7 @@
 
 // display_draw_image(), 
 // display_print()
+// display_printf()
 
 
 #include "display.h"
@@ -50,6 +51,12 @@ static uint16_t display_buffer[DISPLAY_BUFFER_SIZE];
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 static volatile bool display_transfer_done = true;
+
+static esp_err_t display_draw_char_solid( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color);
+
+static esp_err_t display_draw_char_transparent(int x, int y, char c, const display_font_t *font, uint16_t color);
+
+
 
 static bool display_color_transfer_done(
     esp_lcd_panel_io_handle_t panel_io,
@@ -798,7 +805,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
     return ESP_OK;
 }
 
-esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color)
+static esp_err_t display_draw_char_solid( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color)
 {
     assert(font != NULL);
 
@@ -806,7 +813,7 @@ esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, u
 
     if (glyph == NULL)
     {
-        glyph = display_font_get_glyph(font, '?');
+        glyph = display_font_get_glyph(font, font->fallback_char);
 
         if (glyph == NULL)
         {
@@ -838,3 +845,72 @@ esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, u
 }
 
 
+static esp_err_t display_draw_char_transparent(int x, int y, char c, const display_font_t *font, uint16_t color)
+{
+    assert(font != NULL);
+
+    const uint8_t *glyph = display_font_get_glyph(font, c);
+
+    if (glyph == NULL)
+    {
+        glyph = display_font_get_glyph(font, font->fallback_char);
+
+        if (glyph == NULL)
+        {
+            return ESP_ERR_INVALID_ARG;
+        }
+    }
+    // const uint16_t lcd_color = display_format_color(color);
+
+    // uint16_t buffer[font->width * font->height];
+    // uint16_t *buffer = display_buffer;
+    // static uint16_t buffer[5 * 7];
+
+
+    for (int row = 0; row < font->height; row++)
+    {
+        for (int col = 0; col < font->width; col++)
+        {
+            bool pixel = ((glyph[col] >> row) & 0x01U);
+            if (pixel)
+            {
+                esp_err_t ret = display_draw_pixel(x + col, y + row, color);
+                if (ret != ESP_OK)
+                {
+                    return ret;
+                }
+            }
+        }
+    }
+    return ESP_OK;
+}
+
+esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode)
+{
+    if (background_mode == DISPLAY_BACKGROUND_TRANSPARENT)
+    {
+        return display_draw_char_transparent(x, y, c, font, color);
+    }
+
+    return display_draw_char_solid(x, y, c, font, color, background_color);
+
+}
+
+esp_err_t display_draw_string( int x, int y, const char *text, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode)
+{
+    assert(text != NULL);
+    assert(font != NULL);
+    const char *p = text;
+    while(*p != '\0')
+    {
+        esp_err_t ret = display_draw_char(x, y, *p, font, color, background_color, background_mode);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+        x += font->width + font->spacing;
+        p++;
+    }
+    return ESP_OK;
+
+}

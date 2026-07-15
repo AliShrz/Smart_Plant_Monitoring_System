@@ -112,19 +112,19 @@ void app_main(void)
         // display_draw_triangle(50, 50, 100, 100, 75, 125, COLOR_BLUE); // Draw a blue triangle
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_char(15, 15, 'A', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 'A' in yellow
+        display_draw_char(15, 15, 'A', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT); // Draw character 'A' in yellow
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_char(25, 15, 'T', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 't' in yellow
+        display_draw_char(25, 15, 'T', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT); // Draw character 't' in yellow
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_char(35, 15, 'I', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 'A' in yellow
+        display_draw_char(35, 15, 'I', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT); // Draw character 'A' in yellow
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_char(45, 15, 'E', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 't' in yellow
+        display_draw_char(45, 15, 'E', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT); // Draw character 't' in yellow
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_char(55, 15, 'H', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 'A' in yellow
+        display_draw_char(55, 15, 'H', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT); // Draw character 'A' in yellow
 
         // display_draw_char(23, 15, 'A', &display_font_5x7, COLOR_BLACK, COLOR_WHITE); // Draw character 't' in yellow
         // vTaskDelay(pdMS_TO_TICKS(1000));
@@ -140,14 +140,27 @@ void app_main(void)
         // display_fill_rect(20,40,100,50,COLOR_RED);
         // vTaskDelay(pdMS_TO_TICKS(1000));
 
-        display_draw_char(15, 25, 'A', &display_font_5x7, COLOR_BLACK, COLOR_WHITE);
-        display_draw_char(15, 33, 'T', &display_font_5x7, COLOR_BLACK, COLOR_WHITE);
-        display_draw_char(15, 41, 'I', &display_font_5x7, COLOR_BLACK, COLOR_WHITE);
+        display_draw_char(15, 25, 'A', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT); // Draw character 'A' in yellow
+        display_draw_char(15, 33, 'L', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT);
+        display_draw_char(15, 41, 'I', &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT);
 
         display_fill_rect(15, 5, 20, 12, COLOR_BLACK);
         display_fill_rect(21, 5, 26, 12, COLOR_BLUE);
         display_fill_rect(27, 5, 32, 12, COLOR_GREEN);
         display_fill_rect(33, 5, 38, 12, COLOR_YELLOW);
+        display_fill_rect(39, 5, 44, 12, COLOR_RED);
+        display_fill_rect(45, 5, 50, 12, COLOR_PURPLE);
+        display_fill_rect(51, 5, 56, 12, COLOR_ORANGE);
+        display_fill_rect(57, 5, 62, 12, COLOR_CYAN);
+
         // vTaskDelay(pdMS_TO_TICKS(1000));
+        display_draw_string(15, 50, "Hello, World!", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
+
+        display_fill_rect(15, 60, 100, 70, COLOR_BLACK);
+
+        display_draw_char(15, 65, 'A', &display_font_5x7, COLOR_ORANGE,0, DISPLAY_BACKGROUND_TRANSPARENT);
+        display_draw_char(15, 77, 'A', &display_font_5x7, COLOR_ORANGE,0, DISPLAY_BACKGROUND_TRANSPARENT);
+        display_draw_char(15, 89, 'A', &display_font_5x7, COLOR_ORANGE,COLOR_GREEN, DISPLAY_BACKGROUND_SOLID);
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

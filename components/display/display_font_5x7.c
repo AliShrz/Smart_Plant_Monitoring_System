@@ -114,12 +114,12 @@ const display_font_t display_font_5x7 = {
     .width = 5,
     .height = 7,
     .spacing = 1,
-    
+
     .first_char = ' ',
     .last_char = '~',
+    .fallback_char = '?',
 
     .bitmap = bitmap,
 };
-
 
 

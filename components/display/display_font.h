@@ -9,9 +9,12 @@ typedef struct
 {
     uint8_t width;
     uint8_t height;
+    uint8_t spacing; // Optional spacing between characters (in pixels)
+    
     char first_char;
     char last_char;
-    uint8_t spacing; // Optional spacing between characters (in pixels)
+    char fallback_char; // Optional fallback character for unsupported characters
+    
     const uint8_t *bitmap;
 } display_font_t;
 
