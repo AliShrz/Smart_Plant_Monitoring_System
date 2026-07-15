@@ -1,12 +1,10 @@
 idf_component_register(
     SRCS
-        "main.c"
+        "aht20_bmp280.c"
 
     INCLUDE_DIRS
         "."
 
     REQUIRES
-        display
-        soil_moisture
-        aht20_bmp280
+        i2c_master
 )
