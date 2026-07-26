@@ -171,7 +171,7 @@ idf.py monitor
 
 ## Phase 3 — Sensor Drivers
 
-* [ ] I2C Master
+* [x] I2C Master
 * [ ] AHT20 / BMP280
 * [ ] BH1750
 * [ ] ADC calibration
