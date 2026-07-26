@@ -10,3 +10,4 @@ idf_component_register(
         soil_moisture
         aht20_bmp280
 )
+

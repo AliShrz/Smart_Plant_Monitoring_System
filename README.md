@@ -16,31 +16,45 @@ In addition, a web dashboard will provide historical data visualization, overall
 
 **Project Stage**
 
-Foundation
+Core Drivers Development
 
 **Overall Progress**
 
-🟩⬜⬜⬜⬜⬜⬜⬜⬜⬜
+🟩🟩⬜⬜⬜⬜⬜⬜⬜⬜
 
 ### ✅ Completed
 
-* ESP-IDF project initialized
-* Git repository created
-* GitHub repository created
-* Modular project structure
-* Soil moisture sensor driver (ADC One-Shot)
+- ESP-IDF project initialized
+- Git repository created
+- GitHub repository created
+- Modular component-based architecture
+- Soil moisture sensor driver (ADC One-Shot)
+- LCD driver (ST7735)
+- Graphics primitives
+  - Pixel
+  - Lines
+  - Rectangles
+  - Circles
+  - Triangles
+- Bitmap font engine
+- 5×7 font
+- Text rendering
+- Transparent text rendering
+- printf-style text rendering
 
 ### 🔄 In Progress
 
-* Soil moisture sensor calibration
+- I2C Master driver
+- AHT20 / BMP280 driver
 
 ### 📌 Planned
 
+* Soil moisture calibration
 * BH1750 light sensor
 * AHT20 temperature & humidity sensor
-* LCD display node
 * Wi-Fi communication
 * Cloud backend
+* Display UI
 * Web dashboard
 * Plant health recommendations
 
@@ -59,10 +73,12 @@ Foundation
 
 ## Display Node
 
-* LCD interface
-* View multiple plants
-* Navigate between plants
-* Display latest sensor values
+* ST7735 LCD driver
+* Graphics primitives
+* Bitmap font rendering
+* Formatted text rendering
+* Multiple plant pages
+* Simple graphical interface
 
 ## Dashboard
 
@@ -85,7 +101,7 @@ Foundation
 ## Display Node
 
 * ESP32 DevKit
-* I2C LCD Display
+* ST7735 SPI TFT Display
 
 ---
 
@@ -95,9 +111,14 @@ Foundation
 Smart_Plant_Monitoring_System/
 
 ├── components/
+|   ├── bus/
+│   │   └── i2c_master/
+│   │
+|   ├── display/
+│   │
 │   └── sensors/
-│       ├── soil_moisture.c
-│       └── soil_moisture.h
+│       ├── soil_moisture/
+│       └── aht20_bmp280/
 │
 ├── main/
 │   └── main.c
@@ -137,18 +158,23 @@ idf.py monitor
 
 * [x] ESP-IDF project setup
 * [x] GitHub repository
+* [x] Modular component architecture
 * [x] Soil moisture ADC driver
+
+## Phase 2 — Display 
+
+* [x] ST7735 driver
+* [x] Graphics primitives
+* [x] Font engine
+* [x] Text rendering
+* [x] printf API
+
+## Phase 3 — Sensor Drivers
+
+* [ ] I2C Master
+* [ ] AHT20 / BMP280
+* [ ] BH1750
 * [ ] ADC calibration
-
-## Phase 2 — Sensor Drivers
-
-* [ ] BH1750 driver
-* [ ] AHT20 driver
-
-## Phase 3 — Display Node
-
-* [ ] LCD driver
-* [ ] User interface
 
 ## Phase 4 — Connectivity
 
@@ -165,11 +191,40 @@ idf.py monitor
 
 # 📝 Development Log
 
-| Date    | Description                          |
-| ------- | ------------------------------------ |
-| 2026-06 | Project initialized using ESP-IDF    |
-| 2026-06 | Implemented soil moisture ADC driver |
-| 2026-06 | GitHub repository created            |
+| Date    | Description                                     |
+|---------|-------------------------------------------------|
+| 2026-06 | ESP-IDF project initialized                     |
+| 2026-06 | GitHub repository created                       |
+| 2026-07 | Implemented soil moisture ADC driver            |
+| 2026-07 | Implemented ST7735 LCD driver                   |
+| 2026-07 | Added graphics primitives                       |
+| 2026-07 | Added bitmap font engine                        |
+| 2026-07 | Added transparent text rendering                |
+| 2026-07 | Added printf-style text rendering               |
+| 2026-07 | Refactored project into modular components      |
+
+---
+
+# Architecture
+
+Application
+      │
+      ▼
++---------------------------+
+|      Sensor Drivers       |
+| Soil | AHT20 | BH1750     |
++---------------------------+
+              │
+              ▼
++---------------------------+
+|      Bus Drivers          |
+|      I2C / SPI / UART     |
++---------------------------+
+              │
+              ▼
++---------------------------+
+|        ESP-IDF            |
++---------------------------+
 
 ---
 
