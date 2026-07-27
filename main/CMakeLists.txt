@@ -8,6 +8,7 @@ idf_component_register(
     REQUIRES
         display
         soil_moisture
-        aht20_bmp280
+        aht20
+        bmp280
 )
 

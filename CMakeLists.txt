@@ -14,11 +14,12 @@ set(EXTRA_COMPONENT_DIRS
     components/display
 
     # Bus
-    components/bus/i2c_master
+    components/bus/i2c_bus
 
     # Sensors
     components/sensors/soil_moisture
-    components/sensors/aht20_bmp280
+    components/sensors/aht20
+    components/sensors/bmp280
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
