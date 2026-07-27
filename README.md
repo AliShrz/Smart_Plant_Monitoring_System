@@ -112,13 +112,14 @@ Smart_Plant_Monitoring_System/
 
 ├── components/
 |   ├── bus/
-│   │   └── i2c_master/
+│   │   └── i2c_bus/
 │   │
 |   ├── display/
 │   │
 │   └── sensors/
 │       ├── soil_moisture/
-│       └── aht20_bmp280/
+│       ├── aht20/
+│       └── bmp280/
 │
 ├── main/
 │   └── main.c
