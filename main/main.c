@@ -3,6 +3,7 @@
 #include "soil_moisture.h"
 #include "i2c_bus.h"
 #include "aht20.h"
+#include "bmp280.h"
 #include "display.h"
 // #include "esp_lcd_panel_ops.h"
 #include "display_font_5x7.h"
@@ -46,13 +47,16 @@ void app_main(void)
     vTaskDelay(pdMS_TO_TICKS(1000));
     
     i2c_master_bus_handle_t bus_handle;
-    i2c_bus_config_t bus_config = {
+
+    i2c_bus_config_t bus_config =
+    {
         .port = I2C_NUM_0,
         .sda = GPIO_NUM_21,
         .scl = GPIO_NUM_22,
         .enable_internal_pullup = true,
-        .glitch_ignore_cnt = 0
+        .glitch_ignore_cnt = 0,
     };
+
     ret = i2c_bus_init(&bus_config, &bus_handle);
     if (ret != ESP_OK)
     {
@@ -63,24 +67,37 @@ void app_main(void)
     ret = aht20_init(bus_handle);
     if (ret != ESP_OK)
     {
-        ESP_LOGE(TAG, "Failed to initialize AHT20 sensor: %s", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Failed to initialize AHT20 sensor: %s",
+                esp_err_to_name(ret));
         return;
     }
 
+    ret = bmp280_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize BMP280 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
+
+
     aht20_data_t sensor_data;
+    bmp280_data_t bmp280_data;
 
     while (1)
     {
 
-        int value = soil_moisture_read_raw();
+        int soil_moisture = soil_moisture_read_raw();
         // printf("Raw value: %d\n", value);
+
+        display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %d", soil_moisture);
 
         ret = aht20_read(&sensor_data);
 
         if (ret == ESP_OK)
         {
-            display_printf(5, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", sensor_data.temperature);
-            display_printf(5, 30, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Humidity: %.2f %%", sensor_data.humidity);
+            display_printf(2, 30, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", sensor_data.temperature);
+            display_printf(2, 50, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Humidity: %.2f %%", sensor_data.humidity);
             printf(
                 "Temperature: %.2f C, Humidity: %.2f %%\n",
                 sensor_data.temperature,
@@ -92,10 +109,30 @@ void app_main(void)
             ESP_LOGE(TAG, "Failed to read AHT20: %s", esp_err_to_name(ret));
         }
 
+        ret = bmp280_read(&bmp280_data);
+        if (ret == ESP_OK)
+        {
+            float hpa_pressure = bmp280_data.pressure / 100.0; // Convert Pa to hPa
+            float pressure_atm = bmp280_data.pressure / 101325.0f; // Convert Pa to atm
+            display_printf(2, 70, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Pressure: %.2f hPa", hpa_pressure);
+            display_printf(2, 90, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", bmp280_data.temperature);
+            display_printf(2, 110, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Atmosphere: %.2f atm", pressure_atm);
+            printf(
+                "Pressure: %.2f hPa, Temperature: %.2f C, Atmosphere: %.2f atm\n",
+                hpa_pressure,
+                bmp280_data.temperature,
+                pressure_atm
+            );
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to read BMP280: %s", esp_err_to_name(ret));
+        }
+
         // display_draw_string(15, 50, "Soil Moisture:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
         // display_draw_string(25, 70, "Raw Value:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
 
-        display_printf(5, 90, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %d", value);
+
 
 
         vTaskDelay(pdMS_TO_TICKS(500));
