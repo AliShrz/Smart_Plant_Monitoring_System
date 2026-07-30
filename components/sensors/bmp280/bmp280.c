@@ -2,13 +2,13 @@
 /* to do: 
 Public API
 ──────────
-bmp280_init()
-bmp280_read()
-bmp280_deinit()
+bmp280_init()               done
+bmp280_read()               done
+bmp280_deinit()             done
 
 Private Sensor Functions
 ────────────────────────
-bmp280_initialize()
+bmp280_initialize()         done
 bmp280_read_chip_id()       done
 bmp280_reset()              done
 bmp280_configure()          done

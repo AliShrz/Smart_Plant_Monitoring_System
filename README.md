@@ -20,7 +20,7 @@ Core Drivers Development
 
 **Overall Progress**
 
-🟩🟩⬜⬜⬜⬜⬜⬜⬜⬜
+🟩🟩🟩⬜⬜⬜⬜⬜⬜⬜
 
 ### ✅ Completed
 
@@ -28,14 +28,31 @@ Core Drivers Development
 - Git repository created
 - GitHub repository created
 - Modular component-based architecture
+
+#### Bus Drivers
+
+- I2C Master driver
+
+#### Sensor Drivers
+
 - Soil moisture sensor driver (ADC One-Shot)
-- LCD driver (ST7735)
-- Graphics primitives
-  - Pixel
-  - Lines
-  - Rectangles
-  - Circles
-  - Triangles
+- AHT20 temperature & humidity sensor driver
+- BMP280 pressure & temperature sensor driver
+
+#### Display Driver
+
+- ST7735 LCD driver
+
+#### Graphics
+
+- Pixel
+- Lines
+- Rectangles
+- Circles
+- Triangles
+
+#### Text Engine
+
 - Bitmap font engine
 - 5×7 font
 - Text rendering
@@ -44,14 +61,11 @@ Core Drivers Development
 
 ### 🔄 In Progress
 
-- I2C Master driver
-- AHT20 / BMP280 driver
+- BH1750 light sensor
 
 ### 📌 Planned
 
 * Soil moisture calibration
-* BH1750 light sensor
-* AHT20 temperature & humidity sensor
 * Wi-Fi communication
 * Cloud backend
 * Display UI
@@ -64,12 +78,11 @@ Core Drivers Development
 
 ## Sensor Node
 
-* Soil moisture measurement
-* Ambient light measurement
-* Temperature measurement
-* Humidity measurement
-* Periodic sensor acquisition
-* Wi-Fi communication
+- ESP32 DevKit
+- Capacitive Soil Moisture Sensor
+- AHT20 Temperature & Humidity Sensor
+- BMP280 Pressure & Temperature Sensor
+- BH1750 Light Sensor
 
 ## Display Node
 
@@ -119,7 +132,8 @@ Smart_Plant_Monitoring_System/
 │   └── sensors/
 │       ├── soil_moisture/
 │       ├── aht20/
-│       └── bmp280/
+│       ├── bmp280/
+│       └── bh1750/     (planned)
 │
 ├── main/
 │   └── main.c
@@ -173,7 +187,8 @@ idf.py monitor
 ## Phase 3 — Sensor Drivers
 
 * [x] I2C Master
-* [ ] AHT20 / BMP280
+* [x] AHT20
+* [x] BMP280
 * [ ] BH1750
 * [ ] ADC calibration
 
@@ -203,6 +218,9 @@ idf.py monitor
 | 2026-07 | Added transparent text rendering                |
 | 2026-07 | Added printf-style text rendering               |
 | 2026-07 | Refactored project into modular components      |
+| 2026-07 | Implemented I2C master driver                  |
+| 2026-07 | Added AHT20 temperature & humidity driver      |
+| 2026-07 | Added BMP280 pressure & temperature driver     |
 
 ---
 
@@ -211,24 +229,44 @@ idf.py monitor
 Application
       │
       ▼
-+---------------------------+
-|      Sensor Drivers       |
-| Soil | AHT20 | BH1750     |
-+---------------------------+
-              │
-              ▼
-+---------------------------+
-|      Bus Drivers          |
-|      I2C / SPI / UART     |
-+---------------------------+
-              │
-              ▼
-+---------------------------+
-|        ESP-IDF            |
-+---------------------------+
++-------------------------------------------+
+|              Sensor Drivers               |
+| Soil | AHT20 | BMP280 | BH1750            |
++-------------------------------------------+
+                    │
+                    ▼
++-------------------------------------------+
+|                Bus Drivers                |
+|          I2C / SPI / ADC / UART           |
++-------------------------------------------+
+                    │
+                    ▼
++-------------------------------------------+
+|                  ESP-IDF                  |
++-------------------------------------------+
 
 ---
 
+# 📦 Implemented Components
+
+## Bus
+
+- I2C Master
+
+## Sensors
+
+- Soil Moisture (ADC)
+- AHT20
+- BMP280
+
+## Display
+
+- ST7735 TFT
+- Graphics primitives
+- Bitmap font engine
+- Formatted text rendering
+
+---
 # 📄 License
 
 This project is currently under development.
