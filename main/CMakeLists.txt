@@ -11,5 +11,6 @@ idf_component_register(
         aht20
         bmp280
         bh1750
+        wifi
 )
 
