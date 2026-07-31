@@ -58,11 +58,21 @@ static uint16_t display_buffer[DISPLAY_BUFFER_SIZE];
 
 static volatile bool display_transfer_done = true;
 
+
+
+static esp_err_t spi_bus_init(void);
+static esp_err_t lcd_io_init(void);
+static esp_err_t lcd_panel_init(void);
+static esp_err_t backlight_init(void);
+static esp_err_t panel_reset(void);
+static esp_err_t panel_initialize(void);
+static esp_err_t panel_display_on(void);
+static esp_err_t panel_display_off(void);
+static esp_err_t backlight_on(void);
+static esp_err_t backlight_off(void);
 static esp_err_t display_draw_char_solid( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color);
-
 static esp_err_t display_draw_char_transparent(int x, int y, char c, const display_font_t *font, uint16_t color);
-
-
+static esp_err_t display_draw_circle_points(int x_center, int y_center, int x, int y, uint16_t color);
 
 static bool display_color_transfer_done(
     esp_lcd_panel_io_handle_t panel_io,

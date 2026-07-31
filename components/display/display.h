@@ -9,25 +9,18 @@ typedef enum
     DISPLAY_BACKGROUND_TRANSPARENT
 } display_background_mode_t;
 
-static esp_err_t spi_bus_init(void);
+#define COLOR_BLACK 0x0000
+#define COLOR_WHITE 0xFFFF
+#define COLOR_RED   0xF800
+#define COLOR_GREEN 0x07E0
+#define COLOR_BLUE  0x001F
+#define COLOR_YELLOW 0xFFE0
+#define COLOR_CYAN 0x07FF
+#define COLOR_MAGENTA 0xF81F
+#define COLOR_ORANGE 0xFD20
+#define COLOR_PURPLE 0x780F
 
-static esp_err_t lcd_io_init(void);
 
-static esp_err_t lcd_panel_init(void);
-
-static esp_err_t backlight_init(void);
-
-static esp_err_t panel_reset(void);
-
-static esp_err_t panel_initialize(void);
-
-static esp_err_t panel_display_on(void);
-
-static esp_err_t panel_display_off(void);
-
-static esp_err_t backlight_on(void);
-
-static esp_err_t backlight_off(void);
 
 esp_err_t display_init(void);
 
@@ -51,11 +44,7 @@ esp_err_t display_draw_line_bresenham(int x_start, int y_start, int x_end, int y
 
 esp_err_t display_draw_line(int x_start, int y_start, int x_end, int y_end, uint16_t color);
 
-static esp_err_t display_draw_circle_points(int x_center, int y_center, int x, int y, uint16_t color);
-
 esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t color);
-
-static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, int y, uint16_t color);
 
 esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t color);
 

@@ -12,16 +12,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define COLOR_BLACK 0x0000
-#define COLOR_WHITE 0xFFFF
-#define COLOR_RED   0xF800
-#define COLOR_GREEN 0x07E0
-#define COLOR_BLUE  0x001F
-#define COLOR_YELLOW 0xFFE0
-#define COLOR_CYAN 0x07FF
-#define COLOR_MAGENTA 0xF81F
-#define COLOR_ORANGE 0xFD20
-#define COLOR_PURPLE 0x780F
+
 
 static const char *TAG = "main";
 
@@ -40,12 +31,6 @@ void app_main(void)
         ESP_LOGE(TAG, "Failed to initialize display: %s", esp_err_to_name(ret));
         return;
     }
-
-    display_fill(COLOR_BLACK); // Draw a blank bitmap (black screen)
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
-    vTaskDelay(pdMS_TO_TICKS(1000));
     
     i2c_master_bus_handle_t bus_handle;
 
@@ -89,18 +74,33 @@ void app_main(void)
         return;
     }
 
-
+    soil_moisture_data_t soil_moisture_data;
     aht20_data_t sensor_data;
     bmp280_data_t bmp280_data;
     bh1750_data_t bh1750_data;
 
+    display_fill(COLOR_BLACK); // Draw a blank bitmap (black screen)
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
     while (1)
     {
 
-        int soil_moisture = soil_moisture_read_raw();
-        // printf("Raw value: %d\n", value);
+        ret = soil_moisture_read(&soil_moisture_data);
+        if (ret == ESP_OK)
+        {
+            display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %.2f %%", soil_moisture_data.moisture_percentage);
+            printf("Raw value: %.2f %%\n", soil_moisture_data.moisture_percentage);
+        }
+        else
+        {
+            ESP_LOGE(TAG,
+                    "Failed to read soil moisture: %s",
+                    esp_err_to_name(ret));
+        }
 
-        display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %d", soil_moisture);
 
         ret = aht20_read(&sensor_data);
 
@@ -152,8 +152,6 @@ void app_main(void)
 
         // display_draw_string(15, 50, "Soil Moisture:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
         // display_draw_string(25, 70, "Raw Value:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
-
-
 
 
         vTaskDelay(pdMS_TO_TICKS(500));
