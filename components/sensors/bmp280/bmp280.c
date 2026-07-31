@@ -20,8 +20,8 @@ Private Register Access
 ───────────────────────
 bmp280_read_register()      done
 bmp280_write_register()     done
-
 */
+
 #include "bmp280.h"
 
 #include "esp_err.h"

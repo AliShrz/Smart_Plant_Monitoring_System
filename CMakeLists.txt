@@ -20,6 +20,7 @@ set(EXTRA_COMPONENT_DIRS
     components/sensors/soil_moisture
     components/sensors/aht20
     components/sensors/bmp280
+    components/sensors/bh1750
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

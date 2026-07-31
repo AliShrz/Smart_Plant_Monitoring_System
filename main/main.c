@@ -4,6 +4,7 @@
 #include "i2c_bus.h"
 #include "aht20.h"
 #include "bmp280.h"
+#include "bh1750.h"
 #include "display.h"
 // #include "esp_lcd_panel_ops.h"
 #include "display_font_5x7.h"
@@ -80,9 +81,18 @@ void app_main(void)
         return;
     }
 
+    ret = bh1750_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize BH1750 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
+
 
     aht20_data_t sensor_data;
     bmp280_data_t bmp280_data;
+    bh1750_data_t bh1750_data;
 
     while (1)
     {
@@ -127,6 +137,17 @@ void app_main(void)
         else
         {
             ESP_LOGE(TAG, "Failed to read BMP280: %s", esp_err_to_name(ret));
+        }
+
+        ret = bh1750_read(&bh1750_data);
+        if (ret == ESP_OK)
+        {
+            display_printf(2, 130, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Lux: %.2f lx", bh1750_data.lux);
+            printf("Lux: %.2f lx\n", bh1750_data.lux);
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to read BH1750: %s", esp_err_to_name(ret));
         }
 
         // display_draw_string(15, 50, "Soil Moisture:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);

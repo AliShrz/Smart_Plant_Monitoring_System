@@ -10,5 +10,6 @@ idf_component_register(
         soil_moisture
         aht20
         bmp280
+        bh1750
 )
 
