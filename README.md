@@ -24,11 +24,12 @@ In addition, a web dashboard will provide historical data visualization, overall
 
 **Project Stage**
 
-Core Drivers Development
+Sensor Drivers Complete
+Transition to Connectivity
 
 **Overall Progress**
 
-🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜
+🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜
 
 ### ✅ Completed
 
@@ -43,7 +44,7 @@ Core Drivers Development
 
 #### Sensor Drivers
 
-- Soil moisture sensor driver (ADC One-Shot)
+- Soil moisture sensor driver (ADC One-Shot + calibration)
 - AHT20 temperature & humidity sensor driver
 - BMP280 pressure & temperature sensor driver
 - BH1750 ambient light sensor driver
@@ -70,12 +71,10 @@ Core Drivers Development
 
 ### 🔄 In Progress
 
-- Soil moisture calibration
+- Wi-Fi communication
 
 ### 📌 Planned
 
-* Soil moisture calibration
-* Wi-Fi communication
 * Cloud backend
 * Display UI
 * Web dashboard
@@ -199,7 +198,7 @@ idf.py monitor
 * [x] AHT20
 * [x] BMP280
 * [x] BH1750
-* [ ] ADC calibration
+* [x] ADC calibration
 
 ## Phase 4 — Connectivity
 
@@ -231,6 +230,7 @@ idf.py monitor
 | 2026-07 | Added AHT20 temperature & humidity driver       |
 | 2026-07 | Added BMP280 pressure & temperature driver      |
 | 2026-07 | Added BH1750 ambient light sensor driver        |
+| 2026-08 | Added soil moisture calibration                 |
 
 ---
 
@@ -267,7 +267,7 @@ Application
 
 ## Sensors
 
-- Soil Moisture (ADC)
+- Soil Moisture (ADC + Calibration)
 - AHT20
 - BMP280
 - BH1750
