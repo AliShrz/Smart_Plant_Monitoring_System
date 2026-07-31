@@ -4,7 +4,15 @@ A modular IoT-based plant monitoring system built with **ESP32** and **ESP-IDF**
 
 The goal of this project is to create a scalable system capable of monitoring multiple plants by measuring environmental conditions and providing real-time insights through local displays and a web dashboard.
 
-Each plant is equipped with an ESP32-based sensor node that periodically measures soil moisture, ambient temperature, humidity, and light intensity. The collected data is transmitted over Wi-Fi to a cloud backend for storage and analysis.
+Each plant is equipped with an ESP32-based sensor node that periodically measures:
+
+- Soil moisture
+- Ambient temperature
+- Relative humidity
+- Atmospheric pressure
+- Ambient light intensity
+
+The collected data is transmitted over Wi-Fi to a cloud backend for storage and analysis.
 
 A dedicated ESP32 display node retrieves the latest measurements from the cloud and presents them on an LCD, allowing quick access to the status of every plant without requiring a computer or smartphone.
 
@@ -20,7 +28,7 @@ Core Drivers Development
 
 **Overall Progress**
 
-🟩🟩🟩⬜⬜⬜⬜⬜⬜⬜
+🟩🟩🟩🟩⬜⬜⬜⬜⬜⬜
 
 ### ✅ Completed
 
@@ -38,6 +46,7 @@ Core Drivers Development
 - Soil moisture sensor driver (ADC One-Shot)
 - AHT20 temperature & humidity sensor driver
 - BMP280 pressure & temperature sensor driver
+- BH1750 ambient light sensor driver
 
 #### Display Driver
 
@@ -61,7 +70,7 @@ Core Drivers Development
 
 ### 🔄 In Progress
 
-- BH1750 light sensor
+- Soil moisture calibration
 
 ### 📌 Planned
 
@@ -133,7 +142,7 @@ Smart_Plant_Monitoring_System/
 │       ├── soil_moisture/
 │       ├── aht20/
 │       ├── bmp280/
-│       └── bh1750/     (planned)
+│       └── bh1750/
 │
 ├── main/
 │   └── main.c
@@ -189,7 +198,7 @@ idf.py monitor
 * [x] I2C Master
 * [x] AHT20
 * [x] BMP280
-* [ ] BH1750
+* [x] BH1750
 * [ ] ADC calibration
 
 ## Phase 4 — Connectivity
@@ -218,9 +227,10 @@ idf.py monitor
 | 2026-07 | Added transparent text rendering                |
 | 2026-07 | Added printf-style text rendering               |
 | 2026-07 | Refactored project into modular components      |
-| 2026-07 | Implemented I2C master driver                  |
-| 2026-07 | Added AHT20 temperature & humidity driver      |
-| 2026-07 | Added BMP280 pressure & temperature driver     |
+| 2026-07 | Implemented I2C master driver                   |
+| 2026-07 | Added AHT20 temperature & humidity driver       |
+| 2026-07 | Added BMP280 pressure & temperature driver      |
+| 2026-07 | Added BH1750 ambient light sensor driver        |
 
 ---
 
@@ -232,7 +242,7 @@ Application
       ▼
 ┌─────────────────────────────────────────────┐
 │               Sensor Drivers                │
-│  Soil │ AHT20 │ BMP280 │ BH1750 (Planned)   │
+│  Soil │ AHT20 │ BMP280 │ BH1750             │
 └─────────────────────────────────────────────┘
                      │
                      ▼
@@ -260,6 +270,7 @@ Application
 - Soil Moisture (ADC)
 - AHT20
 - BMP280
+- BH1750
 
 ## Display
 
