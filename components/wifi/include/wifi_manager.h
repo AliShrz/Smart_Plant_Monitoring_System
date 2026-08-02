@@ -12,6 +12,7 @@ wifi_manager_connect()
 wifi_manager_disconnect()
 wifi_manager_is_connected()
 wifi_manager_get_ip()
+wifi_manager_get_rssi()
 wifi_manager_deinit()
 */
 
