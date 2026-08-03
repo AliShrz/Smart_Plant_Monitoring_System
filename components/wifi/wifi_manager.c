@@ -2,7 +2,7 @@
 
 Public API
 ──────────
-wifi_manager_init()
+wifi_manager_init()             done
 wifi_manager_connect()
 wifi_manager_disconnect()
 wifi_manager_is_connected()
@@ -19,8 +19,8 @@ wifi_manager_stop()
 
 Private Helpers
 ───────────────
-wifi_manager_create_event_group()
-wifi_manager_destroy_event_group()
+wifi_manager_create_event_group()   done
+wifi_manager_destroy_event_group()  done
 
 */
 
@@ -60,6 +60,12 @@ static const char *TAG = "wifi_manager";
 static esp_err_t wifi_manager_create_event_group(void);
 static esp_err_t wifi_manager_destroy_event_group(void);
 
+static void wifi_manager_event_handler(
+    void *arg,
+    esp_event_base_t event_base,
+    int32_t event_id,
+    void *event_data);
+
 
 /************** Definitions **************/
 
@@ -93,12 +99,6 @@ static esp_err_t wifi_manager_destroy_event_group(void)
 
     return ESP_OK;
 }
-
-static void wifi_manager_event_handler(
-    void *arg,
-    esp_event_base_t event_base,
-    int32_t event_id,
-    void *event_data);
 
 esp_err_t wifi_manager_init(void)
 {
@@ -151,4 +151,40 @@ esp_err_t wifi_manager_init(void)
     wifi.initialized = true;
 
     return ESP_OK;
+}
+
+static void wifi_manager_event_handler(
+    void *arg,
+    esp_event_base_t event_base,
+    int32_t event_id,
+    void *event_data)
+{
+    if (event_base == IP_EVENT &&
+        event_id == IP_EVENT_STA_GOT_IP)
+    {
+        ip_event_got_ip_t *event =
+            (ip_event_got_ip_t *)event_data;
+
+        xEventGroupClearBits(
+            wifi.event_group_handle,
+            WIFI_FAIL_BIT);
+
+        xEventGroupSetBits(
+            wifi.event_group_handle,
+            WIFI_CONNECTED_BIT);
+
+        ESP_LOGI(
+            TAG,
+            "Got IP: " IPSTR,
+            IP2STR(&event->ip_info.ip));
+    }
+    else if(event_base == WIFI_EVENT &&
+            event_id == WIFI_EVENT_STA_DISCONNECTED)
+    {
+        xEventGroupClearBits(
+            wifi.event_group_handle,
+            WIFI_CONNECTED_BIT);
+
+        ESP_LOGW(TAG, "Disconnected from Wi-Fi");
+    }
 }
