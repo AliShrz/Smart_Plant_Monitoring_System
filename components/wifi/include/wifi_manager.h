@@ -29,3 +29,6 @@ bool wifi_manager_is_connected(void);
 int8_t wifi_manager_get_rssi(void);
 
 esp_err_t wifi_manager_deinit(void);
+
+esp_err_t wifi_manager_connect(const char *ssid, const char *password);
+

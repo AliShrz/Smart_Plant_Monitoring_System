@@ -13,7 +13,7 @@ wifi_manager_deinit()
 Private Functions
 ─────────────────
 wifi_manager_initialize()
-wifi_manager_event_handler()
+wifi_manager_event_handler()        done
 wifi_manager_start()
 wifi_manager_stop()
 
@@ -60,6 +60,7 @@ static const char *TAG = "wifi_manager";
 static esp_err_t wifi_manager_create_event_group(void);
 static esp_err_t wifi_manager_destroy_event_group(void);
 
+// Private Functions
 static void wifi_manager_event_handler(
     void *arg,
     esp_event_base_t event_base,
@@ -185,6 +186,102 @@ static void wifi_manager_event_handler(
             wifi.event_group_handle,
             WIFI_CONNECTED_BIT);
 
+        xEventGroupSetBits(
+            wifi.event_group_handle,
+            WIFI_FAIL_BIT);
+
         ESP_LOGW(TAG, "Disconnected from Wi-Fi");
     }
+}
+
+esp_err_t wifi_manager_connect(const char *ssid, const char *password)
+{
+    if (!wifi.initialized)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (ssid == NULL || password == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    wifi_config_t config = {0};
+
+    if (strlen(ssid) >= sizeof(config.sta.ssid))
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (strlen(password) >= sizeof(config.sta.password))
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (ssid[0] == '\0')
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    strlcpy(
+        (char *)config.sta.ssid,
+        ssid,
+        sizeof(config.sta.ssid));
+
+    strlcpy(
+        (char *)config.sta.password,
+        password,
+        sizeof(config.sta.password));
+
+    ESP_LOGI(TAG, "Connecting to \"%s\"...", ssid);
+
+    /* Start a new connection attempt */
+    xEventGroupClearBits(
+        wifi.event_group_handle,
+        WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
+
+    ESP_RETURN_ON_ERROR(
+        esp_wifi_set_config(
+            WIFI_IF_STA,
+            &config),
+        TAG,
+        "Failed to configure Wi-Fi");
+
+    ESP_RETURN_ON_ERROR(
+        esp_wifi_connect(),
+        TAG,
+        "Failed to start connection");
+
+    EventBits_t bits = xEventGroupWaitBits(
+        wifi.event_group_handle,
+        WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
+        pdFALSE,                  // Do not clear bits on exit
+        pdFALSE,                  // Wait until any bit is set
+        pdMS_TO_TICKS(10000));    // 10 second timeout
+
+    if (bits & WIFI_CONNECTED_BIT)
+    {
+        ESP_LOGI(TAG, "Successfully connected");
+
+        return ESP_OK;
+    }
+
+    if (bits & WIFI_FAIL_BIT)
+    {
+        ESP_LOGE(TAG, "Failed to connect to \"%s\"", ssid);
+
+        return ESP_FAIL;
+    }
+
+    ESP_LOGE(TAG, "Connection timed out");
+
+    return ESP_ERR_TIMEOUT;
+}
+
+bool wifi_manager_is_connected(void)
+{
+    EventBits_t bits = xEventGroupGetBits(
+        wifi.event_group_handle);
+
+    return (bits & WIFI_CONNECTED_BIT) != 0;
 }

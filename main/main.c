@@ -6,19 +6,47 @@
 #include "bmp280.h"
 #include "bh1750.h"
 #include "display.h"
+#include "wifi_manager.h"
+#include "nvs_flash.h"
+#include "esp_netif.h"
+#include "esp_event.h"
 // #include "esp_lcd_panel_ops.h"
 #include "display_font_5x7.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-
+#define SSID "HUAWEI-2.4G-k4JK_ext"
+#define PASS "3jBc8cpR"
 
 static const char *TAG = "main";
 
 void app_main(void)
 {
-    esp_err_t ret = soil_moisture_init();
+    esp_err_t ret;
+    
+    ESP_ERROR_CHECK(nvs_flash_init());
+
+    ESP_ERROR_CHECK(esp_netif_init());
+
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    ret = wifi_manager_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize WiFi: %s", esp_err_to_name(ret));
+        return;
+    }
+
+    ret = wifi_manager_connect(SSID, PASS);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to connect to WiFi: %s", esp_err_to_name(ret));
+        return;
+    }
+
+
+    ret = soil_moisture_init();
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to initialize soil moisture sensor: %s", esp_err_to_name(ret));
@@ -150,8 +178,16 @@ void app_main(void)
             ESP_LOGE(TAG, "Failed to read BH1750: %s", esp_err_to_name(ret));
         }
 
-        // display_draw_string(15, 50, "Soil Moisture:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
-        // display_draw_string(25, 70, "Raw Value:", &display_font_5x7, COLOR_BLACK, COLOR_WHITE,DISPLAY_BACKGROUND_TRANSPARENT);
+        if (wifi_manager_is_connected())
+        {
+            ESP_LOGI(TAG, "Wi-Fi Connected");
+            display_printf(2, 150, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi connected");
+        }
+        else
+        {
+            ESP_LOGW(TAG, "Wi-Fi Disconnected");
+            display_printf(2, 150, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi disconnected");
+        }
 
 
         vTaskDelay(pdMS_TO_TICKS(500));
