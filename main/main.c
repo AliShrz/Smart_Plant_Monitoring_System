@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "esp_check.h"
+#include "esp_log.h"
 #include "soil_moisture.h"
 #include "i2c_bus.h"
 #include "aht20.h"
@@ -45,6 +47,19 @@ void app_main(void)
         return;
     }
 
+    esp_ip4_addr_t ip;
+
+    if (wifi_manager_get_ip(&ip) == ESP_OK)
+    {
+        ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&ip));
+    }
+
+    ESP_LOGI(
+        TAG,
+        "RSSI: %d dBm",
+        wifi_manager_get_rssi());
+
+    /*******************/
 
     ret = soil_moisture_init();
     if (ret != ESP_OK)
@@ -113,75 +128,108 @@ void app_main(void)
     display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
+    int8_t wifi_rssi;
+    char ip_string[16];
+    uint8_t count = 0;
+
     while (1)
     {
 
-        ret = soil_moisture_read(&soil_moisture_data);
-        if (ret == ESP_OK)
-        {
-            display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %.2f %%", soil_moisture_data.moisture_percentage);
-            printf("Raw value: %.2f %%\n", soil_moisture_data.moisture_percentage);
-        }
-        else
-        {
-            ESP_LOGE(TAG,
-                    "Failed to read soil moisture: %s",
-                    esp_err_to_name(ret));
-        }
+        // ret = soil_moisture_read(&soil_moisture_data);
+        // if (ret == ESP_OK)
+        // {
+        //     display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %.2f %%", soil_moisture_data.moisture_percentage);
+        //     printf("Raw value: %.2f %%\n", soil_moisture_data.moisture_percentage);
+        // }
+        // else
+        // {
+        //     ESP_LOGE(TAG,
+        //             "Failed to read soil moisture: %s",
+        //             esp_err_to_name(ret));
+        // }
 
 
-        ret = aht20_read(&sensor_data);
+        // ret = aht20_read(&sensor_data);
 
-        if (ret == ESP_OK)
-        {
-            display_printf(2, 30, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", sensor_data.temperature);
-            display_printf(2, 50, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Humidity: %.2f %%", sensor_data.humidity);
-            printf(
-                "Temperature: %.2f C, Humidity: %.2f %%\n",
-                sensor_data.temperature,
-                sensor_data.humidity
-            );
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to read AHT20: %s", esp_err_to_name(ret));
-        }
+        // if (ret == ESP_OK)
+        // {
+        //     display_printf(2, 30, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", sensor_data.temperature);
+        //     display_printf(2, 50, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Humidity: %.2f %%", sensor_data.humidity);
+        //     printf(
+        //         "Temperature: %.2f C, Humidity: %.2f %%\n",
+        //         sensor_data.temperature,
+        //         sensor_data.humidity
+        //     );
+        // }
+        // else
+        // {
+        //     ESP_LOGE(TAG, "Failed to read AHT20: %s", esp_err_to_name(ret));
+        // }
 
-        ret = bmp280_read(&bmp280_data);
-        if (ret == ESP_OK)
-        {
-            float hpa_pressure = bmp280_data.pressure / 100.0; // Convert Pa to hPa
-            float pressure_atm = bmp280_data.pressure / 101325.0f; // Convert Pa to atm
-            display_printf(2, 70, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Pressure: %.2f hPa", hpa_pressure);
-            display_printf(2, 90, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", bmp280_data.temperature);
-            display_printf(2, 110, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Atmosphere: %.2f atm", pressure_atm);
-            printf(
-                "Pressure: %.2f hPa, Temperature: %.2f C, Atmosphere: %.2f atm\n",
-                hpa_pressure,
-                bmp280_data.temperature,
-                pressure_atm
-            );
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to read BMP280: %s", esp_err_to_name(ret));
-        }
+        // ret = bmp280_read(&bmp280_data);
+        // if (ret == ESP_OK)
+        // {
+        //     float hpa_pressure = bmp280_data.pressure / 100.0; // Convert Pa to hPa
+        //     float pressure_atm = bmp280_data.pressure / 101325.0f; // Convert Pa to atm
+        //     display_printf(2, 70, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Pressure: %.2f hPa", hpa_pressure);
+        //     display_printf(2, 90, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", bmp280_data.temperature);
+        //     display_printf(2, 110, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Atmosphere: %.2f atm", pressure_atm);
+        //     printf(
+        //         "Pressure: %.2f hPa, Temperature: %.2f C, Atmosphere: %.2f atm\n",
+        //         hpa_pressure,
+        //         bmp280_data.temperature,
+        //         pressure_atm
+        //     );
+        // }
+        // else
+        // {
+        //     ESP_LOGE(TAG, "Failed to read BMP280: %s", esp_err_to_name(ret));
+        // }
 
-        ret = bh1750_read(&bh1750_data);
-        if (ret == ESP_OK)
-        {
-            display_printf(2, 130, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Lux: %.2f lx", bh1750_data.lux);
-            printf("Lux: %.2f lx\n", bh1750_data.lux);
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to read BH1750: %s", esp_err_to_name(ret));
-        }
+        // ret = bh1750_read(&bh1750_data);
+        // if (ret == ESP_OK)
+        // {
+        //     display_printf(2, 130, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Lux: %.2f lx", bh1750_data.lux);
+        //     printf("Lux: %.2f lx\n", bh1750_data.lux);
+        // }
+        // else
+        // {
+        //     ESP_LOGE(TAG, "Failed to read BH1750: %s", esp_err_to_name(ret));
+        // }
+
+        ESP_LOGI(
+        TAG,
+        "Connected: %s",
+        wifi_manager_is_connected() ? "YES" : "NO");
 
         if (wifi_manager_is_connected())
         {
-            ESP_LOGI(TAG, "Wi-Fi Connected");
             display_printf(2, 150, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi connected");
+
+            snprintf(
+                ip_string,
+                sizeof(ip_string),
+                IPSTR,
+                IP2STR(&ip));
+            esp_err_t ret = wifi_manager_get_ip(&ip);
+            if (ret == ESP_OK)
+            {
+                display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT, "IP: %s", ip_string);
+            }
+
+            ESP_LOGI(
+                TAG,
+                "IP = " IPSTR,
+                IP2STR(&ip));
+
+
+            wifi_rssi = wifi_manager_get_rssi();
+            display_printf(2, 20, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi rssi: %d dBm", wifi_rssi);
+
+            ESP_LOGI(
+                TAG,
+                "RSSI = %d",
+                wifi_rssi);
         }
         else
         {
@@ -189,7 +237,19 @@ void app_main(void)
             display_printf(2, 150, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi disconnected");
         }
 
+        // if (count == 10)
+        // {
+        // ret = wifi_manager_disconnect();
+        // if (ret != ESP_OK)
+        // {
+        //     ESP_LOGE(TAG, "failed to disconnect: %s",
+        //                 esp_err_to_name(ret));
+        // }
+        // count = 0;
+        // }
+        // count++;
 
-        vTaskDelay(pdMS_TO_TICKS(500));
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

@@ -216,12 +216,12 @@ static void wifi_manager_event_handler(
             return;
         }
 
-        wifi.retry_count = 0;
-        wifi.reconnect_enabled = false;
-
         xEventGroupSetBits(
             wifi.event_group_handle,
             WIFI_FAIL_BIT);
+
+        wifi.retry_count = 0;
+        wifi.reconnect_enabled = false;
 
         ESP_LOGE(
             TAG,
@@ -283,6 +283,9 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
         TAG,
         "Failed to configure Wi-Fi");
 
+    wifi.reconnect_enabled = true;
+    wifi.retry_count = 0;
+    
     esp_err_t err = esp_wifi_connect();
 
     if (err != ESP_OK)
