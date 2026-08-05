@@ -1,28 +1,16 @@
-/* todo: add Wi-Fi manager implementation
-
-Public API
-──────────
-wifi_manager_init()             done
-wifi_manager_connect()
-wifi_manager_disconnect()
-wifi_manager_is_connected()
-wifi_manager_get_ip()
-wifi_manager_get_rssi()
-wifi_manager_deinit()
-
-Private Functions
-─────────────────
-wifi_manager_initialize()
-wifi_manager_event_handler()        done
-wifi_manager_start()
-wifi_manager_stop()
-
-Private Helpers
-───────────────
-wifi_manager_create_event_group()   done
-wifi_manager_destroy_event_group()  done
-
-*/
+/**
+ * @brief Connect to a Wi-Fi access point.
+ *
+ * @param ssid Wi-Fi SSID.
+ * @param password Wi-Fi password.
+ *
+ * @return
+ *      - ESP_OK on success
+ *      - ESP_FAIL if connection failed
+ *      - ESP_ERR_TIMEOUT if connection timed out
+ *      - ESP_ERR_INVALID_STATE if Wi-Fi manager is not initialized
+ *      - ESP_ERR_INVALID_ARG if arguments are invalid
+ */
 
 #include "wifi_manager.h"
 #include "esp_check.h"
@@ -57,7 +45,9 @@ static const char *TAG = "wifi_manager";
 
 #define WIFI_CONNECTED_BIT    BIT0
 #define WIFI_FAIL_BIT         BIT1
-#define WIFI_MAX_RETRY    5
+
+#define WIFI_MAX_RETRY          5
+#define WIFI_INVALID_RSSI    (-128)
 
 // Private Helpers
 static esp_err_t wifi_manager_create_event_group(void);
@@ -186,8 +176,8 @@ static void wifi_manager_event_handler(
             "Got IP: " IPSTR,
             IP2STR(&event->ip_info.ip));
     }
-    else if (event_base == WIFI_EVENT &&
-             event_id == WIFI_EVENT_STA_DISCONNECTED)
+    else if(event_base == WIFI_EVENT &&
+            event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
         xEventGroupClearBits(
             wifi.event_group_handle,
@@ -365,6 +355,116 @@ esp_err_t wifi_manager_disconnect(void)
         "Failed to disconnect Wi-Fi");
 
     ESP_LOGI(TAG, "Disconnecting from Wi-Fi");
+
+    return ESP_OK;
+}
+
+int8_t wifi_manager_get_rssi(void)
+{
+    if (!wifi.initialized)
+    {
+        return WIFI_INVALID_RSSI;
+    }
+
+    if (!wifi_manager_is_connected())
+    {
+        return WIFI_INVALID_RSSI;
+    }
+
+    wifi_ap_record_t ap_info = {0};
+
+    esp_err_t err = esp_wifi_sta_get_ap_info(&ap_info);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to get AP info: %s", esp_err_to_name(err));
+        return WIFI_INVALID_RSSI;
+    }
+
+    return ap_info.rssi;
+}
+
+esp_err_t wifi_manager_get_ip(esp_ip4_addr_t *ip)
+{
+    if (!wifi.initialized)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (ip == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!wifi_manager_is_connected())
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    esp_netif_ip_info_t ip_info;
+
+    ESP_RETURN_ON_ERROR(
+        esp_netif_get_ip_info(
+            wifi.netif,
+            &ip_info),
+        TAG,
+        "Failed to get IP information");
+
+    *ip = ip_info.ip;
+
+    return ESP_OK;
+}
+
+esp_err_t wifi_manager_deinit(void)
+{
+    if (!wifi.initialized)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (wifi_manager_is_connected())
+    {
+        ESP_RETURN_ON_ERROR(
+            wifi_manager_disconnect(),
+            TAG,
+            "Failed to disconnect from Wi-Fi");
+    }
+
+    ESP_RETURN_ON_ERROR(
+        esp_event_handler_instance_unregister(
+            WIFI_EVENT,
+            WIFI_EVENT_STA_DISCONNECTED,
+            wifi.wifi_event_instance),
+        TAG,
+        "Failed to unregister Wi-Fi event handler");
+
+    ESP_RETURN_ON_ERROR(
+        esp_event_handler_instance_unregister(
+            IP_EVENT,
+            IP_EVENT_STA_GOT_IP,
+            wifi.ip_event_instance),
+        TAG,
+        "Failed to unregister IP event handler");
+
+    ESP_RETURN_ON_ERROR(
+        esp_wifi_stop(),
+        TAG,
+        "Failed to stop Wi-Fi");
+
+    ESP_RETURN_ON_ERROR(
+        esp_wifi_deinit(),
+        TAG,
+        "Failed to deinitialize Wi-Fi");
+
+    if (wifi.netif != NULL)
+    {
+        esp_netif_destroy(wifi.netif);
+    }
+
+    wifi_manager_destroy_event_group();
+
+    wifi = (wifi_manager_t){0};
+
+    ESP_LOGI(TAG, "Wi-Fi manager deinitialized");
 
     return ESP_OK;
 }
