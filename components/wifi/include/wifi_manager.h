@@ -32,3 +32,4 @@ esp_err_t wifi_manager_deinit(void);
 
 esp_err_t wifi_manager_connect(const char *ssid, const char *password);
 
+esp_err_t wifi_manager_disconnect(void);

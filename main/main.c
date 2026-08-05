@@ -17,7 +17,7 @@
 #include "freertos/task.h"
 
 #define SSID "HUAWEI-2.4G-k4JK_ext"
-#define PASS "3jBc8cpR"
+#define PASS "3jBc8cpR" // 3jBc8cpR
 
 static const char *TAG = "main";
 

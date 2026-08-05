@@ -44,8 +44,10 @@ typedef struct
     esp_netif_t *netif;
 
     esp_event_handler_instance_t wifi_event_instance;
-
     esp_event_handler_instance_t ip_event_instance;
+
+    uint8_t retry_count;
+    bool reconnect_enabled;
 
 } wifi_manager_t;
 
@@ -55,6 +57,7 @@ static const char *TAG = "wifi_manager";
 
 #define WIFI_CONNECTED_BIT    BIT0
 #define WIFI_FAIL_BIT         BIT1
+#define WIFI_MAX_RETRY    5
 
 // Private Helpers
 static esp_err_t wifi_manager_create_event_group(void);
@@ -160,11 +163,15 @@ static void wifi_manager_event_handler(
     int32_t event_id,
     void *event_data)
 {
+    (void)arg;
+
     if (event_base == IP_EVENT &&
         event_id == IP_EVENT_STA_GOT_IP)
     {
         ip_event_got_ip_t *event =
             (ip_event_got_ip_t *)event_data;
+
+        wifi.retry_count = 0;
 
         xEventGroupClearBits(
             wifi.event_group_handle,
@@ -179,18 +186,57 @@ static void wifi_manager_event_handler(
             "Got IP: " IPSTR,
             IP2STR(&event->ip_info.ip));
     }
-    else if(event_base == WIFI_EVENT &&
-            event_id == WIFI_EVENT_STA_DISCONNECTED)
+    else if (event_base == WIFI_EVENT &&
+             event_id == WIFI_EVENT_STA_DISCONNECTED)
     {
         xEventGroupClearBits(
             wifi.event_group_handle,
             WIFI_CONNECTED_BIT);
 
+        if (!wifi.reconnect_enabled)
+        {
+            ESP_LOGI(TAG, "Wi-Fi disconnected");
+            return;
+        }
+
+        if (wifi.retry_count < WIFI_MAX_RETRY)
+        {
+            wifi.retry_count++;
+
+            ESP_LOGW(
+                TAG,
+                "Connection lost. Retrying... (%d/%d)",
+                wifi.retry_count,
+                WIFI_MAX_RETRY);
+
+            esp_err_t err = esp_wifi_connect();
+
+            if (err != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to start reconnect: %s",
+                    esp_err_to_name(err));
+
+                xEventGroupSetBits(
+                    wifi.event_group_handle,
+                    WIFI_FAIL_BIT);
+            }
+
+            return;
+        }
+
+        wifi.retry_count = 0;
+        wifi.reconnect_enabled = false;
+
         xEventGroupSetBits(
             wifi.event_group_handle,
             WIFI_FAIL_BIT);
 
-        ESP_LOGW(TAG, "Disconnected from Wi-Fi");
+        ESP_LOGE(
+            TAG,
+            "Failed to connect after %d attempts",
+            WIFI_MAX_RETRY);
     }
 }
 
@@ -247,10 +293,17 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
         TAG,
         "Failed to configure Wi-Fi");
 
-    ESP_RETURN_ON_ERROR(
-        esp_wifi_connect(),
-        TAG,
-        "Failed to start connection");
+    esp_err_t err = esp_wifi_connect();
+
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to start connection: %s",
+            esp_err_to_name(err));
+
+        return err;
+    }
 
     EventBits_t bits = xEventGroupWaitBits(
         wifi.event_group_handle,
@@ -280,8 +333,38 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
 
 bool wifi_manager_is_connected(void)
 {
+    if (!wifi.initialized)
+    {
+        return false;
+    }
+
     EventBits_t bits = xEventGroupGetBits(
         wifi.event_group_handle);
 
-    return (bits & WIFI_CONNECTED_BIT) != 0;
+    return ((bits & WIFI_CONNECTED_BIT) != 0);
+}
+
+esp_err_t wifi_manager_disconnect(void)
+{
+    if (!wifi.initialized)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!wifi_manager_is_connected())
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    wifi.reconnect_enabled = false;
+    wifi.retry_count = 0;
+
+    ESP_RETURN_ON_ERROR(
+        esp_wifi_disconnect(),
+        TAG,
+        "Failed to disconnect Wi-Fi");
+
+    ESP_LOGI(TAG, "Disconnecting from Wi-Fi");
+
+    return ESP_OK;
 }
