@@ -21,6 +21,7 @@ set(EXTRA_COMPONENT_DIRS
     components/sensors/aht20
     components/sensors/bmp280
     components/sensors/bh1750
+    components/wifi
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

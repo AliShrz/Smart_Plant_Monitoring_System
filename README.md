@@ -20,7 +20,7 @@ In addition, a web dashboard will provide historical data visualization, overall
 
 ---
 
-# 🚧 Current Status
+# Current Status
 
 **Project Stage**
 
@@ -31,7 +31,7 @@ Transition to Connectivity
 
 🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜
 
-### ✅ Completed
+### Completed
 
 - ESP-IDF project initialized
 - Git repository created
@@ -69,11 +69,11 @@ Transition to Connectivity
 - Transparent text rendering
 - printf-style text rendering
 
-### 🔄 In Progress
+### In Progress
 
 - Wi-Fi communication
 
-### 📌 Planned
+### Planned
 
 * Cloud backend
 * Display UI
@@ -82,7 +82,7 @@ Transition to Connectivity
 
 ---
 
-# ✨ Planned Features
+# Planned Features
 
 ## Sensor Node
 
@@ -110,7 +110,7 @@ Transition to Connectivity
 
 ---
 
-# 🔧 Hardware
+# Hardware
 
 ## Sensor Node
 
@@ -126,7 +126,7 @@ Transition to Connectivity
 
 ---
 
-# 📂 Project Structure
+# Project Structure
 
 ```text
 Smart_Plant_Monitoring_System/
@@ -153,7 +153,7 @@ Smart_Plant_Monitoring_System/
 
 ---
 
-# 🚀 Getting Started
+# Getting Started
 
 ## Build
 
@@ -175,7 +175,7 @@ idf.py monitor
 
 ---
 
-# 🗺️ Development Roadmap
+# Development Roadmap
 
 ## Phase 1 — Foundation
 
@@ -213,7 +213,7 @@ idf.py monitor
 
 ---
 
-# 📝 Development Log
+# Development Log
 
 | Date    | Description                                     |
 |---------|-------------------------------------------------|
@@ -259,7 +259,7 @@ Application
 
 ---
 
-# 📦 Implemented Components
+# Implemented Components
 
 ## Bus
 
@@ -280,6 +280,6 @@ Application
 - Formatted text rendering
 
 ---
-# 📄 License
+# License
 
 This project is currently under development.
