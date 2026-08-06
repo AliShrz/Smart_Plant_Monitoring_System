@@ -1,4 +1,4 @@
-# 🌱 Smart Plant Monitoring System
+# Smart Plant Monitoring System
 
 A modular IoT-based plant monitoring system built with **ESP32** and **ESP-IDF**.
 
@@ -24,12 +24,11 @@ In addition, a web dashboard will provide historical data visualization, overall
 
 **Project Stage**
 
-Sensor Drivers Complete
-Transition to Connectivity
+Display UI Development
 
 **Overall Progress**
 
-🟩🟩🟩🟩🟩⬜⬜⬜⬜⬜
+🟩🟩🟩🟩🟩🟩⬜⬜⬜⬜
 
 ### Completed
 
@@ -69,14 +68,21 @@ Transition to Connectivity
 - Transparent text rendering
 - printf-style text rendering
 
+#### Connectivity
+
+- Wi-Fi manager
+- Automatic reconnect
+- Connection management
+- IP address API
+- RSSI API
+
 ### In Progress
 
-- Wi-Fi communication
+- WDisplay UI
 
 ### Planned
 
 * Cloud backend
-* Display UI
 * Web dashboard
 * Plant health recommendations
 
@@ -137,11 +143,14 @@ Smart_Plant_Monitoring_System/
 │   │
 |   ├── display/
 │   │
-│   └── sensors/
-│       ├── soil_moisture/
-│       ├── aht20/
-│       ├── bmp280/
-│       └── bh1750/
+│   ├── sensors/
+│   │   ├── soil_moisture/
+│   │   ├── aht20/
+│   │   ├── bmp280/
+│   │   └── bh1750/
+│   │
+│   └── wifi/
+│       └── wifi_manager/
 │
 ├── main/
 │   └── main.c
@@ -154,6 +163,11 @@ Smart_Plant_Monitoring_System/
 ---
 
 # Getting Started
+
+## Activate environment
+```bash
+. ~/.espressif/v6.0.1/esp-idf/export.sh
+```
 
 ## Build
 
@@ -202,7 +216,8 @@ idf.py monitor
 
 ## Phase 4 — Connectivity
 
-* [ ] Wi-Fi
+* [x] Wi-Fi
+* [ ] Display UI
 * [ ] Cloud communication
 
 ## Phase 5 — Dashboard
@@ -231,6 +246,7 @@ idf.py monitor
 | 2026-07 | Added BMP280 pressure & temperature driver      |
 | 2026-07 | Added BH1750 ambient light sensor driver        |
 | 2026-08 | Added soil moisture calibration                 |
+| 2026-08 | Implemented Wi-Fi manager driver                |
 
 ---
 
@@ -240,21 +256,20 @@ idf.py monitor
 Application
       │
       ▼
-┌─────────────────────────────────────────────┐
-│               Sensor Drivers                │
-│  Soil │ AHT20 │ BMP280 │ BH1750             │
-└─────────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────┐
-│                 Bus Drivers                 │
-│          I2C │ SPI │ ADC │ UART             │
-└─────────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────┐
-│                   ESP-IDF                   │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────┐
+│                Display UI                    │
+└──────────────────────────────────────────────┘
+      │
+      ▼
+┌──────────────────────────────────────────────┐
+│ Drivers                                      │
+│ Display │ Wi-Fi │ Sensors │ Bus              │
+└──────────────────────────────────────────────┘
+      │
+      ▼
+┌──────────────────────────────────────────────┐
+│                  ESP-IDF                     │
+└──────────────────────────────────────────────┘
 ```
 
 ---
