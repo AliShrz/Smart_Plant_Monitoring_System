@@ -52,8 +52,47 @@ esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, 
 
 esp_err_t display_fill_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color);
 
-esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode);
+esp_err_t display_draw_char( 
+    int x, 
+    int y, 
+    char c, 
+    const display_font_t *font, 
+    uint16_t color, 
+    uint16_t background_color, 
+    display_background_mode_t background_mode);
 
-esp_err_t display_draw_string( int x, int y, const char *text, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode);
+esp_err_t display_draw_string( 
+    int x, 
+    int y, 
+    const char *text, 
+    const display_font_t *font, 
+    uint16_t color, 
+    uint16_t background_color, 
+    display_background_mode_t background_mode);
 
-esp_err_t display_printf( int x, int y, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode, const char *format, ...);
+esp_err_t display_printf( 
+    int x, 
+    int y, 
+    const display_font_t *font, 
+    uint16_t color, 
+    uint16_t background_color, 
+    display_background_mode_t background_mode, 
+    const char *format, ...);
+
+esp_err_t display_draw_trapezoid(
+    int top_left_x,
+    int top_right_x,
+    int top_y,
+    int bottom_left_x,
+    int bottom_right_x,
+    int bottom_y,
+    uint16_t color);
+
+esp_err_t display_fill_trapezoid(
+    int top_left_x,
+    int top_right_x,
+    int top_y,
+    int bottom_left_x,
+    int bottom_right_x,
+    int bottom_y,
+    uint16_t color);

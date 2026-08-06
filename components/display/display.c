@@ -689,7 +689,7 @@ static void edge_update(
         return;
     }
 
-    *error += dx;
+    *error += abs(dx);
 
     while (*error >= dy)
     {
@@ -955,4 +955,81 @@ esp_err_t display_printf( int x, int y, const display_font_t *font, uint16_t col
     }
     va_end(args);
     return display_draw_string( x, y, buffer, font, color, background_color, background_mode);
+}
+
+esp_err_t display_draw_trapezoid(int top_left_x, int top_right_x, int top_y, int bottom_left_x, int bottom_right_x, int bottom_y, uint16_t color)
+{
+    esp_err_t ret;
+
+    ret = display_draw_line(
+        top_left_x,
+        top_y,
+        top_right_x,
+        top_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(
+        bottom_left_x,
+        bottom_y,
+        bottom_right_x,
+        bottom_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(
+        top_left_x,
+        top_y,
+        bottom_left_x,
+        bottom_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(
+        top_right_x,
+        top_y,
+        bottom_right_x,
+        bottom_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    return ESP_OK;
+}
+
+esp_err_t display_fill_trapezoid(int top_left_x, int top_right_x, int top_y, int bottom_left_x, int bottom_right_x, int bottom_y, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+    if (top_left_x < 0 || top_left_x > LCD_H_RES || top_right_x < 0 || top_right_x > LCD_H_RES || top_y < 0 || top_y > LCD_V_RES || bottom_left_x < 0 || bottom_left_x > LCD_H_RES || bottom_right_x < 0 || bottom_right_x > LCD_H_RES || bottom_y < 0 || bottom_y > LCD_V_RES)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    int x_left = top_left_x;
+    int x_right = top_right_x;
+    int y = top_y;
+    int dx_left = bottom_left_x - x_left;
+    int dy_left = bottom_y - y;
+    int dx_right = bottom_right_x - x_right;
+    int dy_right = bottom_y - y;
+    int error_left = 0;
+    int error_right = 0;
+
+    while (y <= bottom_y)
+    {
+        esp_err_t ret = display_draw_hline(x_left, y, x_right, color);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+
+        edge_update(&x_left, &error_left, dx_left, dy_left, (dx_left >= 0) ? 1 : -1);
+        edge_update(&x_right, &error_right, dx_right, dy_right, (dx_right >= 0) ? 1 : -1);
+
+        y++;
+    }
+
+    return ESP_OK;
 }
