@@ -78,7 +78,7 @@ Display UI Development
 
 ### In Progress
 
-- WDisplay UI
+- Display UI
 
 ### Planned
 
