@@ -70,6 +70,7 @@ static esp_err_t panel_display_on(void);
 static esp_err_t panel_display_off(void);
 static esp_err_t backlight_on(void);
 static esp_err_t backlight_off(void);
+static inline void display_swap_int(int *a, int *b);
 static esp_err_t display_draw_char_solid( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color);
 static esp_err_t display_draw_char_transparent(int x, int y, char c, const display_font_t *font, uint16_t color);
 static esp_err_t display_draw_circle_points(int x_center, int y_center, int x, int y, uint16_t color);
@@ -282,14 +283,31 @@ esp_err_t display_draw_pixel(int x, int y, uint16_t color)
     return ret;
 }
 
+static inline void display_swap_int(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
 esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color)
 {
     if (panel_handle == NULL)
     {
         return ESP_ERR_INVALID_STATE;
     }
+
+    if (x_start > x_end)
+    {
+        display_swap_int(&x_start, &x_end);
+    }
     
-    if (x_start < 0 || x_start >= LCD_H_RES || y_start < 0 || y_start >= LCD_V_RES || x_end < 0 || x_end >= LCD_H_RES || y_end < 0 || y_end >= LCD_V_RES || x_end <= x_start || y_end <= y_start)
+    if (y_start > y_end)
+    {
+        display_swap_int(&y_start, &y_end);
+    }
+    
+    if (x_start < 0 || x_start > LCD_H_RES || y_start < 0 || y_start > LCD_V_RES || x_end < 0 || x_end > LCD_H_RES || y_end < 0 || y_end > LCD_V_RES || x_end == x_start || y_end == y_start)
     {
         return ESP_ERR_INVALID_ARG;
     }

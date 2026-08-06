@@ -10,6 +10,12 @@
 
 typedef struct
 {
+    uint8_t plant_id;
+
+    char time[12];   // "2:13 AM"
+
+    char date[16];  // "13 Aug 2024"
+
     uint8_t soil_moisture_percent;
 
     float temperature_c;
@@ -31,6 +37,6 @@ typedef struct
 
 esp_err_t display_ui_init(void);
 
-esp_err_t display_ui_show(const display_ui_data_t *data);
+esp_err_t display_ui_show(display_ui_data_t *data);
 
 esp_err_t display_ui_deinit(void);

@@ -142,6 +142,7 @@ Smart_Plant_Monitoring_System/
 │   │   └── i2c_bus/
 │   │
 |   ├── display/
+│   ├── display_ui/
 │   │
 │   ├── sensors/
 │   │   ├── soil_moisture/
@@ -149,10 +150,8 @@ Smart_Plant_Monitoring_System/
 │   │   ├── bmp280/
 │   │   └── bh1750/
 │   │
-│   ├── wifi/
-│   │   └── wifi_manager/
-│   │
-│   └── display_ui/
+│   └── wifi/
+│       └── wifi_manager/
 │
 ├── main/
 │   └── main.c
@@ -168,7 +167,7 @@ Smart_Plant_Monitoring_System/
 
 ## Activate environment
 ```bash
-. ~/.espressif/v6.0.1/esp-idf/export.sh
+~/.espressif/v6.0.1/esp-idf/export.sh
 ```
 
 ## Build

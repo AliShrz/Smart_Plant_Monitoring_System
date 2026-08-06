@@ -1,3 +1,10 @@
+/*
+ * Rectangle coordinates:
+ *
+ * (x_start, y_start) : inclusive
+ * (x_end, y_end)     : exclusive
+ */
+
 #pragma once
 #include "esp_err.h"
 #include "esp_check.h"
