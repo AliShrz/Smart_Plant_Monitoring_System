@@ -12,6 +12,7 @@ set(EXTRA_COMPONENT_DIRS
 
     # Display
     components/display
+    components/display_ui
 
     # Bus
     components/bus/i2c_bus
@@ -21,6 +22,8 @@ set(EXTRA_COMPONENT_DIRS
     components/sensors/aht20
     components/sensors/bmp280
     components/sensors/bh1750
+
+    # WiFi
     components/wifi
 )
 

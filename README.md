@@ -149,8 +149,10 @@ Smart_Plant_Monitoring_System/
 │   │   ├── bmp280/
 │   │   └── bh1750/
 │   │
-│   └── wifi/
-│       └── wifi_manager/
+│   ├── wifi/
+│   │   └── wifi_manager/
+│   │
+│   └── display_ui/
 │
 ├── main/
 │   └── main.c
