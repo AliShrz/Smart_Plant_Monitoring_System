@@ -144,6 +144,8 @@ void app_main(void)
         .date = "06 Aug 2026",
 
         .wifi_connected = true,
+
+        .soil_moisture_percent = 75,
         };
 
     // int8_t wifi_rssi;
@@ -152,14 +154,21 @@ void app_main(void)
 
     while (1)
     {
+        // ret = display_draw_trapezoid(10, 100, 10, 20, 90, 50, COLOR_RED);
+        // if (ret != ESP_OK)
+        // {
+        //     ESP_LOGE(TAG, "Failed to draw trapezoid: %s", esp_err_to_name(ret));
+        // }
 
 
-    ret = display_ui_show(&ui);
-    if (ret != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Failed to show display UI: %s", esp_err_to_name(ret));
-        return;
-    }
+        ret = display_ui_show(&ui);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to show display UI: %s", esp_err_to_name(ret));
+            return;
+        }
+        
+
 
     // ret =     display_draw_hline(
     //     0,
@@ -171,9 +180,9 @@ void app_main(void)
     //     ESP_LOGE(TAG, "Failed to draw horizontal line: %s", esp_err_to_name(ret));
     //     return;
     // }
-    else {
-        ESP_LOGI(TAG, "Display UI updated successfully.");
-    }
+    // else {
+    //     ESP_LOGI(TAG, "Display UI updated successfully.");
+    // }
 
 
         vTaskDelay(pdMS_TO_TICKS(1000));

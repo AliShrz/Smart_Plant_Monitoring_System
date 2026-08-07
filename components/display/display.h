@@ -16,16 +16,28 @@ typedef enum
     DISPLAY_BACKGROUND_TRANSPARENT
 } display_background_mode_t;
 
-#define COLOR_BLACK 0x0000
-#define COLOR_WHITE 0xFFFF
-#define COLOR_RED   0xF800
-#define COLOR_GREEN 0x07E0
-#define COLOR_BLUE  0x001F
-#define COLOR_YELLOW 0xFFE0
-#define COLOR_CYAN 0x07FF
-#define COLOR_MAGENTA 0xF81F
-#define COLOR_ORANGE 0xFD20
-#define COLOR_PURPLE 0x780F
+#define COLOR_BLACK         0x0000
+#define COLOR_WHITE         0xFFFF
+
+#define COLOR_RED           0xF800
+#define COLOR_GREEN         0x07E0
+#define COLOR_BLUE          0x001F
+
+#define COLOR_YELLOW        0xFFE0
+#define COLOR_CYAN          0x07FF
+#define COLOR_MAGENTA       0xF81F
+
+#define COLOR_ORANGE        0xFD20
+#define COLOR_BROWN         0xA145
+#define COLOR_GRAY          0x8410
+
+#define COLOR_LIGHT_GRAY    0xC618
+#define COLOR_DARK_GRAY     0x4208
+
+#define COLOR_DARK_GREEN    0x0320
+#define COLOR_LIGHT_BLUE    0x867D
+
+#define COLOR_TERRACOTTA    0xD2B0
 
 
 
@@ -59,8 +71,47 @@ esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, 
 
 esp_err_t display_fill_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color);
 
-esp_err_t display_draw_char( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode);
+esp_err_t display_draw_char( 
+    int x, 
+    int y, 
+    char c, 
+    const display_font_t *font, 
+    uint16_t color, 
+    uint16_t background_color, 
+    display_background_mode_t background_mode);
 
-esp_err_t display_draw_string( int x, int y, const char *text, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode);
+esp_err_t display_draw_string( 
+    int x, 
+    int y, 
+    const char *text, 
+    const display_font_t *font, 
+    uint16_t color, 
+    uint16_t background_color, 
+    display_background_mode_t background_mode);
 
-esp_err_t display_printf( int x, int y, const display_font_t *font, uint16_t color, uint16_t background_color, display_background_mode_t background_mode, const char *format, ...);
+esp_err_t display_printf( 
+    int x, 
+    int y, 
+    const display_font_t *font, 
+    uint16_t color, 
+    uint16_t background_color, 
+    display_background_mode_t background_mode, 
+    const char *format, ...);
+
+esp_err_t display_draw_trapezoid(
+    int top_left_x,
+    int top_right_x,
+    int top_y,
+    int bottom_left_x,
+    int bottom_right_x,
+    int bottom_y,
+    uint16_t color);
+
+esp_err_t display_fill_trapezoid(
+    int top_left_x,
+    int top_right_x,
+    int top_y,
+    int bottom_left_x,
+    int bottom_right_x,
+    int bottom_y,
+    uint16_t color);

@@ -556,7 +556,6 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
     {
         return ESP_ERR_INVALID_STATE;
     }
-    const uint16_t lcd_color = display_format_color(color);
 
     if (radius < 0)
     {
@@ -564,7 +563,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
     }
     if (radius == 0)
     {
-        return display_draw_pixel(x_center, y_center, lcd_color);
+        return display_draw_pixel(x_center, y_center, color);
     }
 
     int d = 3 - 2 * radius;    
@@ -574,7 +573,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
 
     while(x <= y)
     {
-        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, lcd_color);
+        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, color);
         if (ret != ESP_OK)
         {
             return ret;
@@ -600,18 +599,18 @@ static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, in
 {
 
     esp_err_t ret;
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
-    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, lcd_color);
+    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, lcd_color);
+    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, lcd_color);
+    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, lcd_color);
+    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, color);
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
@@ -624,7 +623,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
         return ESP_ERR_INVALID_STATE;
     }
 
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
     if (radius < 0)
     {
@@ -633,7 +632,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 
     if (radius == 0)
     {
-        return display_draw_pixel(x_center, y_center, lcd_color);
+        return display_draw_pixel(x_center, y_center, color);
     }
 
     int d = 3-2 * radius;
@@ -642,7 +641,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 
     while(x <= y)
     {
-        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, lcd_color);
+        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, color);
         if (ret != ESP_OK) 
         {
             return ret;
@@ -667,15 +666,15 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color)
 {
     esp_err_t ret;
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
-    ret = display_draw_line(x1, y1, x2, y2, lcd_color);
+    ret = display_draw_line(x1, y1, x2, y2, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_line(x2, y2, x3, y3, lcd_color);
+    ret = display_draw_line(x2, y2, x3, y3, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_line(x3, y3, x1, y1, lcd_color);
+    ret = display_draw_line(x3, y3, x1, y1, color);
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
@@ -707,7 +706,7 @@ static void edge_update(
         return;
     }
 
-    *error += dx;
+    *error += abs(dx);
 
     while (*error >= dy)
     {
@@ -730,7 +729,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
     if (p2.y < p3.y) swap_points(&p2, &p3);
     if (p1.y < p2.y) swap_points(&p1, &p2);
 
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
     // ---------- Flat Top ----------
     if (p1.y == p2.y)
@@ -758,7 +757,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
                 MIN(x_left, x_right),
                 y,
                 MAX(x_left, x_right),
-                lcd_color);
+                color);
 
             if (ret != ESP_OK)
                 return ret;
@@ -794,7 +793,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
             MIN(x_left, x_right),
             y,
             MAX(x_left, x_right),
-            lcd_color);
+            color);
 
         if (ret != ESP_OK)
             return ret;
@@ -825,7 +824,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
             MIN(x_left, x_right),
             y,
             MAX(x_left, x_right),
-            lcd_color);
+            color);
 
         if (ret != ESP_OK)
             return ret;
@@ -973,4 +972,81 @@ esp_err_t display_printf( int x, int y, const display_font_t *font, uint16_t col
     }
     va_end(args);
     return display_draw_string( x, y, buffer, font, color, background_color, background_mode);
+}
+
+esp_err_t display_draw_trapezoid(int top_left_x, int top_right_x, int top_y, int bottom_left_x, int bottom_right_x, int bottom_y, uint16_t color)
+{
+    esp_err_t ret;
+
+    ret = display_draw_line(
+        top_left_x,
+        top_y,
+        top_right_x,
+        top_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(
+        bottom_left_x,
+        bottom_y,
+        bottom_right_x,
+        bottom_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(
+        top_left_x,
+        top_y,
+        bottom_left_x,
+        bottom_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    ret = display_draw_line(
+        top_right_x,
+        top_y,
+        bottom_right_x,
+        bottom_y,
+        color);
+    if (ret != ESP_OK) return ret;
+
+    return ESP_OK;
+}
+
+esp_err_t display_fill_trapezoid(int top_left_x, int top_right_x, int top_y, int bottom_left_x, int bottom_right_x, int bottom_y, uint16_t color)
+{
+    if (panel_handle == NULL)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+    if (top_left_x < 0 || top_left_x > LCD_H_RES || top_right_x < 0 || top_right_x > LCD_H_RES || top_y < 0 || top_y > LCD_V_RES || bottom_left_x < 0 || bottom_left_x > LCD_H_RES || bottom_right_x < 0 || bottom_right_x > LCD_H_RES || bottom_y < 0 || bottom_y > LCD_V_RES)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    int x_left = top_left_x;
+    int x_right = top_right_x;
+    int y = top_y;
+    int dx_left = bottom_left_x - x_left;
+    int dy_left = bottom_y - y;
+    int dx_right = bottom_right_x - x_right;
+    int dy_right = bottom_y - y;
+    int error_left = 0;
+    int error_right = 0;
+
+    while (y <= bottom_y)
+    {
+        esp_err_t ret = display_draw_hline(x_left, y, x_right, color);
+        if (ret != ESP_OK)
+        {
+            return ret;
+        }
+
+        edge_update(&x_left, &error_left, dx_left, dy_left, (dx_left >= 0) ? 1 : -1);
+        edge_update(&x_right, &error_right, dx_right, dy_right, (dx_right >= 0) ? 1 : -1);
+
+        y++;
+    }
+
+    return ESP_OK;
 }

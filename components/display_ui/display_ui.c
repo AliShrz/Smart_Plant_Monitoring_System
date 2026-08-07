@@ -38,8 +38,9 @@ Colors
 Fonts
 
 */
-#include "display_ui.h"
 #include "display.h"
+#include "display_ui.h"
+#include "display_ui_widgets.h"
 
 #include "display_font_5x7.h"
 
@@ -106,13 +107,6 @@ static void display_ui_draw_layout(void);
 
 static void display_ui_draw_header(const display_ui_data_t *data);
 
-static void display_ui_draw_soil(const display_ui_data_t *data);
-
-static void display_ui_draw_light(const display_ui_data_t *data);
-
-static void display_ui_draw_temperature(const display_ui_data_t *data);
-
-static void display_ui_draw_humidity(const display_ui_data_t *data);
 
 /* ===========================
  * Public API
@@ -134,6 +128,8 @@ esp_err_t display_ui_show(display_ui_data_t *data)
     display_ui_draw_layout();
 
     display_ui_draw_header(data);
+
+    display_ui_draw_pot( 10, 50, data);
     
     return ESP_OK;
 }
