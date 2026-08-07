@@ -146,6 +146,14 @@ void app_main(void)
         .wifi_connected = true,
 
         .soil_moisture_percent = 75,
+
+        .temperature_c = 25.5,
+
+        .humidity_percent = 60.0,
+
+        .pressure_hpa = 1013.25,
+
+        .light_lux = 5000.0,
         };
 
     // int8_t wifi_rssi;

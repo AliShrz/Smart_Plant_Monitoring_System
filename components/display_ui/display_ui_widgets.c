@@ -28,6 +28,29 @@
 #define POT_TEXT_OFFSET_Y      6
 #define POT_PERCENT_X_OFFSET    8
 
+/*==========================
+ * Sun Widget
+ *==========================*/
+
+#define SUN_RADIUS                 8
+
+#define SUN_RAY_COUNT              8
+
+#define SUN_RAY_GAP                2
+
+#define SUN_RAY_MIN_LENGTH         2
+#define SUN_RAY_MAX_LENGTH         8
+
+#define SUN_TEXT_OFFSET_Y          6
+#define MAX_LIGHT_LUX              10000
+
+
+static void display_ui_draw_sun_rays(
+    int x,
+    int y,
+    int ray_length);
+
+
 static void display_ui_draw_plant(
     int x,
     int y)
@@ -307,5 +330,88 @@ void display_ui_draw_pot(
     (body_top_left_x + body_top_right_x) / 2,
     body_bottom_y,
     data->soil_moisture_percent);
+}
+
+/**************** sun *****************/
+
+typedef struct
+{
+    int8_t dx;
+    int8_t dy;
+
+} display_vector2i_t;
+
+static const display_vector2i_t sun_rays[SUN_RAY_COUNT] =
+{
+    {  0, -1 },   // Up
+    {  1, -1 },   // Up Right
+    {  1,  0 },   // Right
+    {  1,  1 },   // Down Right
+    {  0,  1 },   // Down
+    { -1,  1 },   // Down Left
+    { -1,  0 },   // Left
+    { -1, -1 },   // Up Left
+};
+
+static void display_ui_draw_sun_rays(
+    int x,
+    int y,
+    int ray_length)
+{
+    for (int i = 0; i < SUN_RAY_COUNT; i++)
+    {
+        int x_start =
+            x + sun_rays[i].dx * (SUN_RADIUS + SUN_RAY_GAP);
+
+        int y_start =
+            y + sun_rays[i].dy * (SUN_RADIUS + SUN_RAY_GAP);
+
+        int x_end =
+            x + sun_rays[i].dx *
+            (SUN_RADIUS + SUN_RAY_GAP + ray_length);
+
+        int y_end =
+            y + sun_rays[i].dy *
+            (SUN_RADIUS + SUN_RAY_GAP + ray_length);
+
+        display_draw_line(
+            x_start,
+            y_start,
+            x_end,
+            y_end,
+            UI_COLOR_SUN);
+    }
+}
+
+
+void display_ui_draw_sun(
+    int x,
+    int y,
+    const display_ui_data_t *data)
+{
+    (void)data;
+
+    int ray_length =
+    SUN_RAY_MIN_LENGTH +
+    (data->light_lux * (SUN_RAY_MAX_LENGTH - SUN_RAY_MIN_LENGTH))
+    / MAX_LIGHT_LUX;
+    
+    display_ui_draw_sun_rays(
+        x,
+        y,
+        ray_length);
+
+    display_fill_circle(
+        x,
+        y,
+        SUN_RADIUS,
+        UI_COLOR_SUN);
+
+    display_draw_circle(
+        x,
+        y,
+        SUN_RADIUS,
+        UI_COLOR_BORDER);
+
 }
 
