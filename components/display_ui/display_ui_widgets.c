@@ -48,8 +48,20 @@
 static void display_ui_draw_sun_rays(
     int x,
     int y,
-    int ray_length);
+    int ray_length,
+    uint16_t color);
 
+static void display_ui_draw_data_percentage(
+    int center_x,
+    int bottom_y,
+    uint8_t data_percentage);
+
+    typedef struct
+{
+    int8_t dx;
+    int8_t dy;
+
+} display_vector2i_t;
 
 static void display_ui_draw_plant(
     int x,
@@ -213,15 +225,10 @@ static void display_ui_draw_pot_water(
         UI_COLOR_WATER);
 }
 
-static void display_ui_draw_pot_percentage(
+static void display_ui_draw_data_percentage(
     int center_x,
     int bottom_y,
-    uint8_t moisture);
-
-    static void display_ui_draw_pot_percentage(
-    int center_x,
-    int bottom_y,
-    uint8_t moisture)
+    uint8_t data_percentage)
 {
     char text[5];
 
@@ -229,7 +236,7 @@ static void display_ui_draw_pot_percentage(
         text,
         sizeof(text),
         "%u%%",
-        moisture);
+        data_percentage);
 
     display_printf(
         center_x - POT_PERCENT_X_OFFSET,
@@ -315,7 +322,7 @@ void display_ui_draw_pot(
         rim_top_y,
         rim_right_x + POT_RIM_RIGHT_OVERHANG,
         rim_bottom_y,
-        UI_COLOR_BORDER);
+        UI_COLOR_POT_BORDER);
 
     display_draw_trapezoid(
         body_top_left_x,
@@ -324,22 +331,15 @@ void display_ui_draw_pot(
         body_bottom_left_x,
         body_bottom_right_x,
         body_bottom_y,
-        UI_COLOR_BORDER);
+        UI_COLOR_POT_BORDER);
 
-    display_ui_draw_pot_percentage(
+    display_ui_draw_data_percentage(
     (body_top_left_x + body_top_right_x) / 2,
     body_bottom_y,
     data->soil_moisture_percent);
 }
 
 /**************** sun *****************/
-
-typedef struct
-{
-    int8_t dx;
-    int8_t dy;
-
-} display_vector2i_t;
 
 static const display_vector2i_t sun_rays[SUN_RAY_COUNT] =
 {
@@ -356,7 +356,8 @@ static const display_vector2i_t sun_rays[SUN_RAY_COUNT] =
 static void display_ui_draw_sun_rays(
     int x,
     int y,
-    int ray_length)
+    int ray_length,
+    uint16_t color)
 {
     for (int i = 0; i < SUN_RAY_COUNT; i++)
     {
@@ -379,7 +380,7 @@ static void display_ui_draw_sun_rays(
             y_start,
             x_end,
             y_end,
-            UI_COLOR_SUN);
+            color);
     }
 }
 
@@ -389,17 +390,23 @@ void display_ui_draw_sun(
     int y,
     const display_ui_data_t *data)
 {
-    (void)data;
+    uint32_t lux = data->light_lux;
+
+    if (lux > MAX_LIGHT_LUX)
+    {
+        lux = MAX_LIGHT_LUX;
+    }
 
     int ray_length =
     SUN_RAY_MIN_LENGTH +
-    (data->light_lux * (SUN_RAY_MAX_LENGTH - SUN_RAY_MIN_LENGTH))
+    (lux * (SUN_RAY_MAX_LENGTH - SUN_RAY_MIN_LENGTH))
     / MAX_LIGHT_LUX;
     
     display_ui_draw_sun_rays(
         x,
         y,
-        ray_length);
+        ray_length,
+        UI_COLOR_SUN_RAY);
 
     display_fill_circle(
         x,
@@ -411,7 +418,20 @@ void display_ui_draw_sun(
         x,
         y,
         SUN_RADIUS,
-        UI_COLOR_BORDER);
+        UI_COLOR_SUN_RAY);
 
+    display_ui_draw_data_percentage(
+        x,
+        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS,
+        (lux * 100) / MAX_LIGHT_LUX);
+
+    display_printf(
+        x - 25,
+        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS + 18,
+        &display_font_5x7,
+        UI_COLOR_TEXT,
+        UI_COLOR_BACKGROUND,
+        DISPLAY_BACKGROUND_TRANSPARENT,
+        "Lux: %d",lux);
 }
 

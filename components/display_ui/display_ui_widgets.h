@@ -11,13 +11,15 @@
 #define UI_COLOR_TEXT            COLOR_BLACK
 #define UI_COLOR_BORDER          COLOR_BLACK
 
-#define UI_COLOR_POT             0xFC00
+#define UI_COLOR_POT             0xFBA0 // 0xFC00
+#define UI_COLOR_POT_BORDER      0xB2E2
 #define UI_COLOR_WATER           COLOR_LIGHT_BLUE
 
 #define UI_COLOR_LEAF            COLOR_GREEN
 #define UI_COLOR_STEM            COLOR_DARK_GREEN
 
-#define UI_COLOR_SUN             COLOR_YELLOW
+#define UI_COLOR_SUN             0xFEE0
+#define UI_COLOR_SUN_RAY         0xFE20
 
 #define UI_COLOR_TEMPERATURE     COLOR_ORANGE
 

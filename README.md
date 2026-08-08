@@ -167,7 +167,7 @@ Smart_Plant_Monitoring_System/
 
 ## Activate environment
 ```bash
-~/.espressif/v6.0.1/esp-idf/export.sh
+source ~/.espressif/v6.0.1/esp-idf/export.sh
 ```
 
 ## Build
