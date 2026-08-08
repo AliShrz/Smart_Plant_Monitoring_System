@@ -132,6 +132,8 @@ esp_err_t display_ui_show(display_ui_data_t *data)
     display_ui_draw_pot( 10, 50, data);
 
     display_ui_draw_sun( 95, 60, data);
+
+    display_ui_draw_temperature( 13, 140, data);
     
     return ESP_OK;
 }

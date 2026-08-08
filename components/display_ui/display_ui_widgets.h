@@ -21,7 +21,7 @@
 #define UI_COLOR_SUN             0xFEE0
 #define UI_COLOR_SUN_RAY         0xFE20
 
-#define UI_COLOR_TEMPERATURE     COLOR_ORANGE
+#define UI_COLOR_TEMPERATURE     COLOR_RED
 
 #define UI_COLOR_HUMIDITY        COLOR_CYAN
 

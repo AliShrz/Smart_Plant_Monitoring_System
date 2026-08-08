@@ -44,12 +44,27 @@
 #define SUN_TEXT_OFFSET_Y          6
 #define MAX_LIGHT_LUX              10000
 
+/*==========================
+ * Thermometer Widget
+ *==========================*/
+
+#define THERMOMETER_STEM_WIDTH   6
+#define THERMOMETER_STEM_HEIGHT  20
+#define THERMOMETER_BULB_RADIUS  7
+
+#define THERMOMETER_MIN_TEMP       0
+#define THERMOMETER_MAX_TEMP       70
+
 
 static void display_ui_draw_sun_rays(
     int x,
     int y,
     int ray_length,
     uint16_t color);
+
+static void display_ui_draw_thermometer(
+    int x,
+    int y);
 
 static void display_ui_draw_data_percentage(
     int center_x,
@@ -435,3 +450,114 @@ void display_ui_draw_sun(
         "Lux: %d",lux);
 }
 
+/**************** Thermometer ****************/
+
+static void display_ui_draw_thermometer_fill(
+    int x,
+    int y,
+    int temperature)
+{
+    if (temperature < THERMOMETER_MIN_TEMP)
+    {
+        temperature = THERMOMETER_MIN_TEMP;
+    }
+
+    if (temperature > THERMOMETER_MAX_TEMP)
+    {
+        temperature = THERMOMETER_MAX_TEMP;
+    }
+
+    /* Bulb */
+
+    display_fill_circle(
+        x,
+        y,
+        THERMOMETER_BULB_RADIUS - 3,
+        UI_COLOR_TEMPERATURE);
+
+    /* Stem fill height */
+
+    int fill_height =
+        ((temperature - THERMOMETER_MIN_TEMP) *
+         THERMOMETER_STEM_HEIGHT) /
+        (THERMOMETER_MAX_TEMP - THERMOMETER_MIN_TEMP);
+    
+    int fill_width = THERMOMETER_STEM_WIDTH - 4;   // 2 for border and 2 for gap
+
+    if (fill_height > 0)
+    {
+        display_fill_rect(
+            x - fill_width / 2,
+            y - fill_height,
+            x + fill_width / 2,
+            y,
+            UI_COLOR_TEMPERATURE);
+    }
+}
+
+
+static void display_ui_draw_thermometer(
+    int x,
+    int y)
+{
+    /* Stem */
+
+    display_fill_rect(
+        x - THERMOMETER_STEM_WIDTH / 2,
+        y - THERMOMETER_STEM_HEIGHT - (THERMOMETER_BULB_RADIUS / 2),
+        x + (THERMOMETER_STEM_WIDTH + 1) / 2,
+        y,
+        COLOR_WHITE);
+
+    display_draw_rect(
+        x - THERMOMETER_STEM_WIDTH / 2,
+        y - THERMOMETER_STEM_HEIGHT - (THERMOMETER_BULB_RADIUS / 2),
+        x + (THERMOMETER_STEM_WIDTH + 1) / 2,
+        y,
+        UI_COLOR_BORDER);
+
+    /* Bulb */
+
+    display_fill_circle(
+        x,
+        y,
+        THERMOMETER_BULB_RADIUS,
+        COLOR_WHITE);
+
+    display_draw_circle(
+        x,
+        y,
+        THERMOMETER_BULB_RADIUS,
+        UI_COLOR_BORDER);
+}
+
+void display_ui_draw_temperature(
+    int x,
+    int y,
+    const display_ui_data_t *data)
+{
+    display_ui_draw_thermometer(x, y);
+
+    display_ui_draw_thermometer_fill(
+        x,
+        y,
+        data->temperature_c);
+
+    display_printf(
+        x + 13,
+        y + THERMOMETER_BULB_RADIUS - 20,
+        &display_font_5x7,
+        UI_COLOR_TEXT,
+        UI_COLOR_BACKGROUND,
+        DISPLAY_BACKGROUND_TRANSPARENT,
+        "Temp:");
+    display_printf(
+        x + 13,
+        y + THERMOMETER_BULB_RADIUS - 10,
+        &display_font_5x7,
+        UI_COLOR_TEXT,
+        UI_COLOR_BACKGROUND,
+        DISPLAY_BACKGROUND_TRANSPARENT,
+        "%.1f C",
+        data->temperature_c);
+}
