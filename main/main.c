@@ -2,11 +2,11 @@
 
 #include "esp_check.h"
 #include "esp_log.h"
-// #include "soil_moisture.h"
-// #include "i2c_bus.h"
-// #include "aht20.h"
-// #include "bmp280.h"
-// #include "bh1750.h"
+#include "soil_moisture.h"
+#include "i2c_bus.h"
+#include "aht20.h"
+#include "bmp280.h"
+#include "bh1750.h"
 #include "display.h"
 #include "display_ui.h"
 #include "wifi_manager.h"
@@ -62,66 +62,66 @@ void app_main(void)
 
     // /*******************/
 
-    // ret = soil_moisture_init();
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize soil moisture sensor: %s", esp_err_to_name(ret));
-    //     return;
-    // }
-
     ret = display_init();
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to initialize display: %s", esp_err_to_name(ret));
         return;
     }
+
+    ret = soil_moisture_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize soil moisture sensor: %s", esp_err_to_name(ret));
+        return;
+    }
     
-    // i2c_master_bus_handle_t bus_handle;
+    i2c_master_bus_handle_t bus_handle;
 
-    // i2c_bus_config_t bus_config =
-    // {
-    //     .port = I2C_NUM_0,
-    //     .sda = GPIO_NUM_21,
-    //     .scl = GPIO_NUM_22,
-    //     .enable_internal_pullup = true,
-    //     .glitch_ignore_cnt = 0,
-    // };
+    i2c_bus_config_t bus_config =
+    {
+        .port = I2C_NUM_0,
+        .sda = GPIO_NUM_21,
+        .scl = GPIO_NUM_22,
+        .enable_internal_pullup = true,
+        .glitch_ignore_cnt = 0,
+    };
 
-    // ret = i2c_bus_init(&bus_config, &bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize I2C bus: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = i2c_bus_init(&bus_config, &bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize I2C bus: %s", esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = aht20_init(bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize AHT20 sensor: %s",
-    //             esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = aht20_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize AHT20 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = bmp280_init(bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize BMP280 sensor: %s",
-    //             esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = bmp280_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize BMP280 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = bh1750_init(bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize BH1750 sensor: %s",
-    //             esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = bh1750_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize BH1750 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
 
-    // soil_moisture_data_t soil_moisture_data;
-    // aht20_data_t sensor_data;
-    // bmp280_data_t bmp280_data;
-    // bh1750_data_t bh1750_data;
+    soil_moisture_data_t soil_moisture_data;
+    aht20_data_t sensor_data;
+    bmp280_data_t bmp280_data;
+    bh1750_data_t bh1750_data;
 
     display_fill(COLOR_BLACK); // Draw a blank bitmap (black screen)
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -145,15 +145,15 @@ void app_main(void)
 
         .wifi_connected = true,
 
-        .soil_moisture_percent = 75,
+        .soil_moisture_percent = 0,
 
-        .temperature_c = 30.5,
+        .temperature_c = 0.0,
 
-        .humidity_percent = 60.0,
+        .humidity_percent = 0.0,
 
-        .pressure_hpa = 1013.25,
+        .pressure_hpa = 0,
 
-        .light_lux = 5000.0,
+        .light_lux = 0,
         };
 
     // int8_t wifi_rssi;
@@ -162,11 +162,39 @@ void app_main(void)
 
     while (1)
     {
-        // ret = display_draw_trapezoid(10, 100, 10, 20, 90, 50, COLOR_RED);
-        // if (ret != ESP_OK)
-        // {
-        //     ESP_LOGE(TAG, "Failed to draw trapezoid: %s", esp_err_to_name(ret));
-        // }
+        ret = soil_moisture_read(&soil_moisture_data);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to read soil moisture data: %s", esp_err_to_name(ret));
+            return;
+        }
+
+        ret = aht20_read(&sensor_data);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to read AHT20 data: %s", esp_err_to_name(ret));
+            return;
+        }
+
+        ret = bmp280_read(&bmp280_data);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to read BMP280 data: %s", esp_err_to_name(ret));
+            return;
+        }
+
+        ret = bh1750_read(&bh1750_data);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to read BH1750 data: %s", esp_err_to_name(ret));
+            return;
+        }
+
+        ui.soil_moisture_percent = soil_moisture_data.moisture_percentage;
+        ui.temperature_c = bmp280_data.temperature;
+        ui.humidity_percent = sensor_data.humidity;
+        ui.pressure_hpa = bmp280_data.pressure;
+        ui.light_lux = bh1750_data.lux;
 
 
         ret = display_ui_show(&ui);
