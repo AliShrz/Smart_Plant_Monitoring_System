@@ -147,7 +147,7 @@ void app_main(void)
 
         .soil_moisture_percent = 75,
 
-        .temperature_c = 25.5,
+        .temperature_c = 30.5,
 
         .humidity_percent = 60.0,
 

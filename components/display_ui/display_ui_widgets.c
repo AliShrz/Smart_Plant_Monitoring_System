@@ -55,6 +55,12 @@
 #define THERMOMETER_MIN_TEMP       0
 #define THERMOMETER_MAX_TEMP       70
 
+/*==========================
+ * Humidity Widget
+ *==========================*/
+#define HUMIDITY_DROP_RADIUS       7
+#define HUMIDITY_DROP_HEIGHT       10
+
 
 static void display_ui_draw_sun_rays(
     int x,
@@ -71,11 +77,14 @@ static void display_ui_draw_data_percentage(
     int bottom_y,
     uint8_t data_percentage);
 
-    typedef struct
+static void display_ui_draw_humidity_drop(
+    int x,
+    int y);
+
+typedef struct
 {
     int8_t dx;
     int8_t dy;
-
 } display_vector2i_t;
 
 static void display_ui_draw_plant(
@@ -478,7 +487,7 @@ static void display_ui_draw_thermometer_fill(
     /* Stem fill height */
 
     int fill_height =
-        ((temperature - THERMOMETER_MIN_TEMP) *
+        ((temperature - THERMOMETER_MIN_TEMP + 10) *
          THERMOMETER_STEM_HEIGHT) /
         (THERMOMETER_MAX_TEMP - THERMOMETER_MIN_TEMP);
     
@@ -560,4 +569,86 @@ void display_ui_draw_temperature(
         DISPLAY_BACKGROUND_TRANSPARENT,
         "%.1f C",
         data->temperature_c);
+}
+
+/**************** Humidity ****************/
+
+static void display_ui_draw_humidity_drop(
+    int x,
+    int y)
+{
+    /* Drop geometry */
+
+    int circle_radius = HUMIDITY_DROP_RADIUS;
+
+    int triangle_base_y =
+        y - circle_radius + 2;
+
+    int triangle_tip_y =
+        triangle_base_y - HUMIDITY_DROP_HEIGHT;
+
+    /*==========================
+     * Outline
+     *==========================*/
+
+    display_draw_circle(
+        x,
+        y,
+        circle_radius,
+        UI_COLOR_BORDER);
+
+    display_draw_triangle(
+        x - circle_radius + 2,
+        triangle_base_y,
+        x + circle_radius - 2,
+        triangle_base_y,
+        x,
+        triangle_tip_y,
+        UI_COLOR_BORDER);
+
+    /*==========================
+     * Inner fill
+     *==========================*/
+
+    display_fill_circle(
+        x + 1,
+        y,
+        circle_radius - 3,
+        COLOR_BLUE);
+
+    display_fill_triangle(
+        x - circle_radius + 3,
+        triangle_base_y + 1,
+        x + circle_radius - 2,
+        triangle_base_y + 1,
+        x,
+        triangle_tip_y + 2,
+        COLOR_WHITE);
+}
+
+void display_ui_draw_humidity(
+    int x,
+    int y,
+    const display_ui_data_t *data)
+{
+    display_ui_draw_humidity_drop(x, y);
+
+    display_printf(
+        x + HUMIDITY_DROP_RADIUS + 5,
+        y - HUMIDITY_DROP_RADIUS - 6,
+        &display_font_5x7,
+        UI_COLOR_TEXT,
+        UI_COLOR_BACKGROUND,
+        DISPLAY_BACKGROUND_TRANSPARENT,
+        "H: ");
+
+    display_printf(
+        x + HUMIDITY_DROP_RADIUS + 5,
+        y - HUMIDITY_DROP_RADIUS + 4,
+        &display_font_5x7,
+        UI_COLOR_TEXT,
+        UI_COLOR_BACKGROUND,
+        DISPLAY_BACKGROUND_TRANSPARENT,
+        "%.1f%%",
+        data->humidity_percent);
 }

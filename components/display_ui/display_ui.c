@@ -76,10 +76,10 @@ static const char *TAG = "display_ui";
 #define HEADER_WIFI_Y           4
 
 #define HEADER_TIME_X           82
-#define HEADER_TIME_Y           4
+#define HEADER_TIME_Y           14
 
-#define HEADER_DATE_X           66
-#define HEADER_DATE_Y           14
+#define HEADER_DATE_X           60
+#define HEADER_DATE_Y           4
 
 /*==========================
  * Widgets Layout
@@ -134,6 +134,8 @@ esp_err_t display_ui_show(display_ui_data_t *data)
     display_ui_draw_sun( 95, 60, data);
 
     display_ui_draw_temperature( 13, 140, data);
+
+    display_ui_draw_humidity( 80, 140, data);
     
     return ESP_OK;
 }
