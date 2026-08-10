@@ -1,6 +1,7 @@
 # include "display_ui_widgets.h"
 #include "display.h"
 #include "display_font_5x7.h"
+#include "display_ui.h"
 
 
 /*==========================
@@ -91,107 +92,33 @@ static void display_ui_draw_plant(
     int x,
     int y)
 {
-    /*==========================
-     * Stem
-     *==========================*/
-
-    display_fill_rect(
-        x,
-        y - PLANT_STEM_HEIGHT,
-        x + PLANT_STEM_WIDTH,
-        y,
-        UI_COLOR_STEM);
+    // draw cactus
 
     display_draw_rect(
-        x,
-        y - PLANT_STEM_HEIGHT,
-        x + PLANT_STEM_WIDTH,
+        x - 4,
         y,
-        UI_COLOR_BORDER);
-
-    /*==========================
-     * Left leaf
-     *==========================*/
-
-    display_fill_triangle(
-        x,
-        y - 5,
-
-        x - 6,
-        y - 9,
-
-        x - 3,
-        y - 1,
-
-        UI_COLOR_LEAF);
-
-    display_draw_triangle(
-        x,
-        y - 5,
-
-        x - 6,
-        y - 9,
-
-        x - 3,
-        y - 1,
-
-        UI_COLOR_BORDER);
-
-    /*==========================
-     * Right leaf
-     *==========================*/
-
-    display_fill_triangle(
-        x + PLANT_STEM_WIDTH,
-        y - 5,
-
-        x + PLANT_STEM_WIDTH + 6,
-        y - 9,
-
-        x + PLANT_STEM_WIDTH + 3,
-        y - 1,
-
-        UI_COLOR_LEAF);
-
-    display_draw_triangle(
-        x + PLANT_STEM_WIDTH,
-        y - 5,
-
-        x + PLANT_STEM_WIDTH + 6,
-        y - 9,
-
-        x + PLANT_STEM_WIDTH + 3,
-        y - 1,
-
-        UI_COLOR_BORDER);
-
-    /*==========================
-     * Top leaf
-     *==========================*/
-
-    display_fill_triangle(
-        x + 1,
-        y - PLANT_STEM_HEIGHT - 5,
-
-        x - 3,
-        y - PLANT_STEM_HEIGHT + 1,
-
         x + 5,
-        y - PLANT_STEM_HEIGHT + 1,
+        y - 15,
+        COLOR_DARK_GREEN);
 
-        UI_COLOR_LEAF);
+    display_draw_circle(
+        x,
+        y - 15,
+        4,
+        COLOR_DARK_GREEN);
 
-    display_draw_triangle(
-        x + 1,
-        y - PLANT_STEM_HEIGHT - 5,
-
+    display_fill_rect(
         x - 3,
-        y - PLANT_STEM_HEIGHT + 1,
+        y,
+        x + 4,
+        y - 15,
+        COLOR_GREEN);
 
-        x + 5,
-        y - PLANT_STEM_HEIGHT + 1,
-
-        UI_COLOR_BORDER);
+    display_fill_circle(
+        x + 1,
+        y - 15,
+        3,
+        COLOR_GREEN);
 }
 
 static void display_ui_draw_pot_water(
@@ -263,8 +190,8 @@ static void display_ui_draw_data_percentage(
         data_percentage);
 
     display_printf(
-        center_x - POT_PERCENT_X_OFFSET,
-        bottom_y + POT_TEXT_OFFSET_Y,
+        center_x,
+        bottom_y ,
         &display_font_5x7,
         UI_COLOR_TEXT,
         UI_COLOR_BACKGROUND,
@@ -357,10 +284,21 @@ void display_ui_draw_pot(
         body_bottom_y,
         UI_COLOR_POT_BORDER);
 
+    display_printf(
+        8,
+        body_bottom_y + 10,
+        &display_font_5x7,
+        UI_COLOR_TEXT,
+        UI_COLOR_BACKGROUND,
+        DISPLAY_BACKGROUND_TRANSPARENT,
+        "Soil:");
+
     display_ui_draw_data_percentage(
-    (body_top_left_x + body_top_right_x) / 2,
-    body_bottom_y,
+    ((body_top_left_x + body_top_right_x) / 2) + 10,
+    body_bottom_y + 10,
     data->soil_moisture_percent);
+
+
 }
 
 /**************** sun *****************/
@@ -446,7 +384,7 @@ void display_ui_draw_sun(
 
     display_ui_draw_data_percentage(
         x,
-        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS,
+        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS + 8,
         (lux * 100) / MAX_LIGHT_LUX);
 
     display_printf(
@@ -538,6 +476,13 @@ static void display_ui_draw_thermometer(
         y,
         THERMOMETER_BULB_RADIUS,
         UI_COLOR_BORDER);
+
+    display_fill_rect(
+        (x - THERMOMETER_STEM_WIDTH / 2 + 1),
+        (y - THERMOMETER_STEM_HEIGHT - (THERMOMETER_BULB_RADIUS / 2)) + 5,
+        (x + (THERMOMETER_STEM_WIDTH + 1) / 2) - 1,
+        y + 3,
+        COLOR_WHITE);
 }
 
 void display_ui_draw_temperature(

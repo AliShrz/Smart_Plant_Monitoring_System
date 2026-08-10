@@ -85,16 +85,16 @@ static const char *TAG = "display_ui";
  * Widgets Layout
  *==========================*/
 #define POT_X              20
-#define POT_Y              34
+#define POT_Y              60
 
-#define SUN_X              86
-#define SUN_Y              34
+#define SUN_X              95
+#define SUN_Y              60
 
-#define TEMP_X             18
-#define TEMP_Y             118
+#define TEMP_X             13
+#define TEMP_Y             140
 
-#define HUMIDITY_X         78
-#define HUMIDITY_Y         118
+#define HUMIDITY_X         80
+#define HUMIDITY_Y         140
 
 #define WIFI_X             72
 #define WIFI_Y             6
@@ -129,13 +129,13 @@ esp_err_t display_ui_show(display_ui_data_t *data)
 
     display_ui_draw_header(data);
 
-    display_ui_draw_pot( 10, 50, data);
+    display_ui_draw_pot( POT_X, POT_Y, data);
 
-    display_ui_draw_sun( 95, 60, data);
+    display_ui_draw_sun( SUN_X, SUN_Y, data);
 
-    display_ui_draw_temperature( 13, 140, data);
+    display_ui_draw_temperature( TEMP_X, TEMP_Y, data);
 
-    display_ui_draw_humidity( 80, 140, data);
+    display_ui_draw_humidity( HUMIDITY_X, HUMIDITY_Y, data);
     
     return ESP_OK;
 }
