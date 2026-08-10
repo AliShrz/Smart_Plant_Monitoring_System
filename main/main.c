@@ -28,37 +28,37 @@ void app_main(void)
 {
     esp_err_t ret;
     
-    // ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(nvs_flash_init());
 
-    // ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_netif_init());
 
-    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    // ret = wifi_manager_init();
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize WiFi: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = wifi_manager_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize WiFi: %s", esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = wifi_manager_connect(SSID, PASS);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to connect to WiFi: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = wifi_manager_connect(SSID, PASS);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to connect to WiFi: %s", esp_err_to_name(ret));
+        return;
+    }
 
-    // esp_ip4_addr_t ip;
+    esp_ip4_addr_t ip;
 
-    // if (wifi_manager_get_ip(&ip) == ESP_OK)
-    // {
-    //     ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&ip));
-    // }
+    if (wifi_manager_get_ip(&ip) == ESP_OK)
+    {
+        ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&ip));
+    }
 
-    // ESP_LOGI(
-    //     TAG,
-    //     "RSSI: %d dBm",
-    //     wifi_manager_get_rssi());
+    ESP_LOGI(
+        TAG,
+        "RSSI: %d dBm",
+        wifi_manager_get_rssi());
 
     // /*******************/
 
@@ -143,7 +143,7 @@ void app_main(void)
 
         .date = "06 Aug 2026",
 
-        .wifi_connected = true,
+        .wifi_connected = wifi_manager_is_connected(),
 
         .soil_moisture_percent = 0,
 
@@ -158,7 +158,7 @@ void app_main(void)
 
     // int8_t wifi_rssi;
     // char ip_string[16];
-    // uint8_t count = 0;
+    uint8_t count = 0;
 
     while (1)
     {
@@ -195,6 +195,8 @@ void app_main(void)
         ui.humidity_percent = sensor_data.humidity;
         ui.pressure_hpa = bmp280_data.pressure;
         ui.light_lux = bh1750_data.lux;
+        ui.wifi_connected = wifi_manager_is_connected();
+        ui.wifi_rssi = wifi_manager_get_rssi();
 
 
         ret = display_ui_show(&ui);
@@ -204,7 +206,20 @@ void app_main(void)
             return;
         }
         
+        // if (count == 10)
+        // {
+        //     count = 0;
+        //     wifi_manager_disconnect();
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
+            
+        // }
+        // if (ui.wifi_connected == false)
+        // {
+        //     wifi_manager_connect(SSID, PASS);
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
+        // }
 
+        // count++;
 
     // ret =     display_draw_hline(
     //     0,

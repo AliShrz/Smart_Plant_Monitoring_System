@@ -62,6 +62,13 @@
 #define HUMIDITY_DROP_RADIUS       7
 #define HUMIDITY_DROP_HEIGHT       10
 
+/*==========================
+ * WiFi Widget
+ *==========================*/
+#define WIFI_WIDTH   15
+#define WIFI_HEIGHT  9
+
+
 
 static void display_ui_draw_sun_rays(
     int x,
@@ -596,4 +603,128 @@ void display_ui_draw_humidity(
         DISPLAY_BACKGROUND_TRANSPARENT,
         "%.1f%%",
         data->humidity_percent);
+}
+
+/**************** WiFi ****************/
+
+static void display_ui_draw_wifi_quarter_arc(
+    int x_center,
+    int y_center,
+    int radius,
+    uint16_t color)
+{
+    int x = 0;
+    int y = radius;
+
+    int d = 3 - 2 * radius;
+
+    while (x <= y)
+    {
+        /*
+         * Rotate 45 degrees counter-clockwise.
+         *
+         * x' = (x - y) / sqrt(2)
+         * y' = -(x + y) / sqrt(2)
+         *
+         * 1 / sqrt(2) ≈ 0.7071
+         */
+
+        int rx =
+            (int)((x - y) * 0.7071f);
+
+        int ry =
+            (int)(-(x + y) * 0.7071f);
+
+        display_draw_pixel(
+            x_center + rx,
+            y_center + ry,
+            color);
+
+        /*
+         * Second symmetric point
+         */
+
+        rx =
+            (int)((y - x) * 0.7071f);
+
+        ry =
+            (int)(-(x + y) * 0.7071f);
+
+        display_draw_pixel(
+            x_center + rx,
+            y_center + ry,
+            color);
+
+        if (d < 0)
+        {
+            d += 4 * x + 6;
+        }
+        else
+        {
+            d += 4 * (x - y) + 10;
+            y--;
+        }
+
+        x++;
+    }
+}
+
+static void display_ui_draw_wifi_icon(
+    int x,
+    int y,
+    uint16_t color)
+{
+    /* Outer arc */
+
+    display_ui_draw_wifi_quarter_arc(
+        x,
+        y,
+        6,
+        color);
+
+    /* Inner arc */
+
+    display_ui_draw_wifi_quarter_arc(
+        x,
+        y,
+        3,
+        color);
+
+    /* Center dot */
+
+    display_draw_pixel(
+        x,
+        y,
+        color);
+}
+
+void display_ui_draw_wifi(
+    int x,
+    int y,
+    const display_ui_data_t *data)
+{
+    if (data == NULL)
+    {
+        return;
+    }
+
+    if (!data->wifi_connected)
+    {
+        display_printf(
+            x - 5,
+            y - 5,
+            &display_font_5x7,
+            COLOR_RED,
+            UI_COLOR_BACKGROUND,
+            DISPLAY_BACKGROUND_TRANSPARENT,
+            "NA");
+        return;
+    }
+
+    display_ui_draw_wifi_icon(
+        x,
+        y,
+        data->wifi_connected
+            ? UI_COLOR_WIFI
+            : COLOR_RED);
 }

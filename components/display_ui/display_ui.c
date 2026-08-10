@@ -96,8 +96,8 @@ static const char *TAG = "display_ui";
 #define HUMIDITY_X         80
 #define HUMIDITY_Y         140
 
-#define WIFI_X             72
-#define WIFI_Y             6
+#define WIFI_X             52
+#define WIFI_Y             8
 
 /* ===========================
  * Private Functions
@@ -136,6 +136,8 @@ esp_err_t display_ui_show(display_ui_data_t *data)
     display_ui_draw_temperature( TEMP_X, TEMP_Y, data);
 
     display_ui_draw_humidity( HUMIDITY_X, HUMIDITY_Y, data);
+
+    display_ui_draw_wifi( WIFI_X, WIFI_Y, data);
     
     return ESP_OK;
 }
