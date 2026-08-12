@@ -8,6 +8,7 @@
 #include "bmp280.h"
 #include "bh1750.h"
 #include "display.h"
+#include "display_ui.h"
 #include "wifi_manager.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
@@ -27,46 +28,39 @@ void app_main(void)
 {
     esp_err_t ret;
     
-    // ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(nvs_flash_init());
 
-    // ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_netif_init());
 
-    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    // ret = wifi_manager_init();
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize WiFi: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = wifi_manager_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize WiFi: %s", esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = wifi_manager_connect(SSID, PASS);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to connect to WiFi: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = wifi_manager_connect(SSID, PASS);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to connect to WiFi: %s", esp_err_to_name(ret));
+        return;
+    }
 
-    // esp_ip4_addr_t ip;
+    esp_ip4_addr_t ip;
 
-    // if (wifi_manager_get_ip(&ip) == ESP_OK)
-    // {
-    //     ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&ip));
-    // }
+    if (wifi_manager_get_ip(&ip) == ESP_OK)
+    {
+        ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&ip));
+    }
 
-    // ESP_LOGI(
-    //     TAG,
-    //     "RSSI: %d dBm",
-    //     wifi_manager_get_rssi());
+    ESP_LOGI(
+        TAG,
+        "RSSI: %d dBm",
+        wifi_manager_get_rssi());
 
-    /*******************/
-
-    // ret = soil_moisture_init();
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize soil moisture sensor: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    // /*******************/
 
     ret = display_init();
     if (ret != ESP_OK)
@@ -74,53 +68,60 @@ void app_main(void)
         ESP_LOGE(TAG, "Failed to initialize display: %s", esp_err_to_name(ret));
         return;
     }
+
+    ret = soil_moisture_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize soil moisture sensor: %s", esp_err_to_name(ret));
+        return;
+    }
     
-    // i2c_master_bus_handle_t bus_handle;
+    i2c_master_bus_handle_t bus_handle;
 
-    // i2c_bus_config_t bus_config =
-    // {
-    //     .port = I2C_NUM_0,
-    //     .sda = GPIO_NUM_21,
-    //     .scl = GPIO_NUM_22,
-    //     .enable_internal_pullup = true,
-    //     .glitch_ignore_cnt = 0,
-    // };
+    i2c_bus_config_t bus_config =
+    {
+        .port = I2C_NUM_0,
+        .sda = GPIO_NUM_21,
+        .scl = GPIO_NUM_22,
+        .enable_internal_pullup = true,
+        .glitch_ignore_cnt = 0,
+    };
 
-    // ret = i2c_bus_init(&bus_config, &bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize I2C bus: %s", esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = i2c_bus_init(&bus_config, &bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize I2C bus: %s", esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = aht20_init(bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize AHT20 sensor: %s",
-    //             esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = aht20_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize AHT20 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = bmp280_init(bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize BMP280 sensor: %s",
-    //             esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = bmp280_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize BMP280 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
 
-    // ret = bh1750_init(bus_handle);
-    // if (ret != ESP_OK)
-    // {
-    //     ESP_LOGE(TAG, "Failed to initialize BH1750 sensor: %s",
-    //             esp_err_to_name(ret));
-    //     return;
-    // }
+    ret = bh1750_init(bus_handle);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize BH1750 sensor: %s",
+                esp_err_to_name(ret));
+        return;
+    }
 
-    // soil_moisture_data_t soil_moisture_data;
-    // aht20_data_t sensor_data;
-    // bmp280_data_t bmp280_data;
-    // bh1750_data_t bh1750_data;
+    soil_moisture_data_t soil_moisture_data;
+    aht20_data_t sensor_data;
+    bmp280_data_t bmp280_data;
+    bh1750_data_t bh1750_data;
 
     display_fill(COLOR_BLACK); // Draw a blank bitmap (black screen)
     vTaskDelay(pdMS_TO_TICKS(1000));
@@ -128,144 +129,111 @@ void app_main(void)
     display_fill(COLOR_WHITE); // Draw a blank bitmap (white screen)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
+    ret = display_ui_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize display UI: %s", esp_err_to_name(ret));
+        return;
+    }
+    
+    display_ui_data_t ui = {
+        .plant_id = 1,
+
+        .time = "2:13 AM",
+
+        .date = "06 Aug 2026",
+
+        .wifi_connected = wifi_manager_is_connected(),
+
+        .soil_moisture_percent = 0,
+
+        .temperature_c = 0.0,
+
+        .humidity_percent = 0.0,
+
+        .pressure_hpa = 0,
+
+        .light_lux = 0,
+        };
+
     // int8_t wifi_rssi;
     // char ip_string[16];
+    uint8_t count = 0;
 
     while (1)
     {
-        ret = display_draw_trapezoid(10, 100, 10, 20, 90, 50, COLOR_RED);
+        ret = soil_moisture_read(&soil_moisture_data);
         if (ret != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to draw trapezoid: %s", esp_err_to_name(ret));
+            ESP_LOGE(TAG, "Failed to read soil moisture data: %s", esp_err_to_name(ret));
+            return;
         }
 
-        ret = display_fill_trapezoid(10, 100, 60, 20, 90, 100, COLOR_BLUE);
+        ret = aht20_read(&sensor_data);
         if (ret != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to fill trapezoid: %s", esp_err_to_name(ret));
+            ESP_LOGE(TAG, "Failed to read AHT20 data: %s", esp_err_to_name(ret));
+            return;
         }
 
-        ret = display_fill_trapezoid(
-    20, 80,110,
-    20, 80, 150,
-    COLOR_BLUE);
+        ret = bmp280_read(&bmp280_data);
         if (ret != ESP_OK)
         {
-            ESP_LOGE(TAG, "Failed to fill trapezoid: %s", esp_err_to_name(ret));
+            ESP_LOGE(TAG, "Failed to read BMP280 data: %s", esp_err_to_name(ret));
+            return;
         }
-        // ret = soil_moisture_read(&soil_moisture_data);
-        // if (ret == ESP_OK)
-        // {
-        //     display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Soil Moisture: %.2f %%", soil_moisture_data.moisture_percentage);
-        //     printf("Raw value: %.2f %%\n", soil_moisture_data.moisture_percentage);
-        // }
-        // else
-        // {
-        //     ESP_LOGE(TAG,
-        //             "Failed to read soil moisture: %s",
-        //             esp_err_to_name(ret));
-        // }
+
+        ret = bh1750_read(&bh1750_data);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to read BH1750 data: %s", esp_err_to_name(ret));
+            return;
+        }
+
+        ui.soil_moisture_percent = soil_moisture_data.moisture_percentage;
+        ui.temperature_c = bmp280_data.temperature;
+        ui.humidity_percent = sensor_data.humidity;
+        ui.pressure_hpa = bmp280_data.pressure;
+        ui.light_lux = bh1750_data.lux;
+        ui.wifi_connected = wifi_manager_is_connected();
+        ui.wifi_rssi = wifi_manager_get_rssi();
 
 
-        // ret = aht20_read(&sensor_data);
-
-        // if (ret == ESP_OK)
-        // {
-        //     display_printf(2, 30, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", sensor_data.temperature);
-        //     display_printf(2, 50, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Humidity: %.2f %%", sensor_data.humidity);
-        //     printf(
-        //         "Temperature: %.2f C, Humidity: %.2f %%\n",
-        //         sensor_data.temperature,
-        //         sensor_data.humidity
-        //     );
-        // }
-        // else
-        // {
-        //     ESP_LOGE(TAG, "Failed to read AHT20: %s", esp_err_to_name(ret));
-        // }
-
-        // ret = bmp280_read(&bmp280_data);
-        // if (ret == ESP_OK)
-        // {
-        //     float hpa_pressure = bmp280_data.pressure / 100.0; // Convert Pa to hPa
-        //     float pressure_atm = bmp280_data.pressure / 101325.0f; // Convert Pa to atm
-        //     display_printf(2, 70, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Pressure: %.2f hPa", hpa_pressure);
-        //     display_printf(2, 90, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Temperature: %.2f C", bmp280_data.temperature);
-        //     display_printf(2, 110, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Atmosphere: %.2f atm", pressure_atm);
-        //     printf(
-        //         "Pressure: %.2f hPa, Temperature: %.2f C, Atmosphere: %.2f atm\n",
-        //         hpa_pressure,
-        //         bmp280_data.temperature,
-        //         pressure_atm
-        //     );
-        // }
-        // else
-        // {
-        //     ESP_LOGE(TAG, "Failed to read BMP280: %s", esp_err_to_name(ret));
-        // }
-
-        // ret = bh1750_read(&bh1750_data);
-        // if (ret == ESP_OK)
-        // {
-        //     display_printf(2, 130, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "Lux: %.2f lx", bh1750_data.lux);
-        //     printf("Lux: %.2f lx\n", bh1750_data.lux);
-        // }
-        // else
-        // {
-        //     ESP_LOGE(TAG, "Failed to read BH1750: %s", esp_err_to_name(ret));
-        // }
-
-        // ESP_LOGI(
-        // TAG,
-        // "Connected: %s",
-        // wifi_manager_is_connected() ? "YES" : "NO");
-
-        // if (wifi_manager_is_connected())
-        // {
-        //     display_printf(2, 150, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi connected");
-
-        //     snprintf(
-        //         ip_string,
-        //         sizeof(ip_string),
-        //         IPSTR,
-        //         IP2STR(&ip));
-        //     esp_err_t ret = wifi_manager_get_ip(&ip);
-        //     if (ret == ESP_OK)
-        //     {
-        //         display_printf(2, 10, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_TRANSPARENT, "IP: %s", ip_string);
-        //     }
-
-        //     ESP_LOGI(
-        //         TAG,
-        //         "IP = " IPSTR,
-        //         IP2STR(&ip));
-
-
-        //     wifi_rssi = wifi_manager_get_rssi();
-        //     display_printf(2, 20, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi rssi: %d dBm", wifi_rssi);
-
-        //     ESP_LOGI(
-        //         TAG,
-        //         "RSSI = %d",
-        //         wifi_rssi);
-        // }
-        // else
-        // {
-        //     ESP_LOGW(TAG, "Wi-Fi Disconnected");
-        //     display_printf(2, 150, &display_font_5x7, COLOR_BLACK, COLOR_WHITE, DISPLAY_BACKGROUND_SOLID, "WiFi disconnected");
-        // }
-
+        ret = display_ui_show(&ui);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Failed to show display UI: %s", esp_err_to_name(ret));
+            return;
+        }
+        
         // if (count == 10)
         // {
-        // ret = wifi_manager_disconnect();
-        // if (ret != ESP_OK)
+        //     count = 0;
+        //     wifi_manager_disconnect();
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
+            
+        // }
+        // if (ui.wifi_connected == false)
         // {
-        //     ESP_LOGE(TAG, "failed to disconnect: %s",
-        //                 esp_err_to_name(ret));
+        //     wifi_manager_connect(SSID, PASS);
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
         // }
-        // count = 0;
-        // }
+
         // count++;
+
+    // ret =     display_draw_hline(
+    //     0,
+    //     24,
+    //     127,
+    //     COLOR_BLACK);
+    // if (ret != ESP_OK)
+    // {
+    //     ESP_LOGE(TAG, "Failed to draw horizontal line: %s", esp_err_to_name(ret));
+    //     return;
+    // }
+    // else {
+    //     ESP_LOGI(TAG, "Display UI updated successfully.");
+    // }
 
 
         vTaskDelay(pdMS_TO_TICKS(1000));

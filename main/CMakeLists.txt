@@ -15,5 +15,6 @@ idf_component_register(
         esp_netif
         esp_event
         wifi
+        display_ui
 )
 

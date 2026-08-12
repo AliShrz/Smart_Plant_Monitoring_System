@@ -70,6 +70,7 @@ static esp_err_t panel_display_on(void);
 static esp_err_t panel_display_off(void);
 static esp_err_t backlight_on(void);
 static esp_err_t backlight_off(void);
+static inline void display_swap_int(int *a, int *b);
 static esp_err_t display_draw_char_solid( int x, int y, char c, const display_font_t *font, uint16_t color, uint16_t background_color);
 static esp_err_t display_draw_char_transparent(int x, int y, char c, const display_font_t *font, uint16_t color);
 static esp_err_t display_draw_circle_points(int x_center, int y_center, int x, int y, uint16_t color);
@@ -282,14 +283,31 @@ esp_err_t display_draw_pixel(int x, int y, uint16_t color)
     return ret;
 }
 
+static inline void display_swap_int(int *a, int *b)
+{
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
 esp_err_t display_fill_rect(int x_start, int y_start, int x_end, int y_end, uint16_t color)
 {
     if (panel_handle == NULL)
     {
         return ESP_ERR_INVALID_STATE;
     }
+
+    if (x_start > x_end)
+    {
+        display_swap_int(&x_start, &x_end);
+    }
     
-    if (x_start < 0 || x_start >= LCD_H_RES || y_start < 0 || y_start >= LCD_V_RES || x_end < 0 || x_end >= LCD_H_RES || y_end < 0 || y_end >= LCD_V_RES || x_end <= x_start || y_end <= y_start)
+    if (y_start > y_end)
+    {
+        display_swap_int(&y_start, &y_end);
+    }
+    
+    if (x_start < 0 || x_start > LCD_H_RES || y_start < 0 || y_start > LCD_V_RES || x_end < 0 || x_end > LCD_H_RES || y_end < 0 || y_end > LCD_V_RES || x_end == x_start || y_end == y_start)
     {
         return ESP_ERR_INVALID_ARG;
     }
@@ -538,7 +556,6 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
     {
         return ESP_ERR_INVALID_STATE;
     }
-    const uint16_t lcd_color = display_format_color(color);
 
     if (radius < 0)
     {
@@ -546,7 +563,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
     }
     if (radius == 0)
     {
-        return display_draw_pixel(x_center, y_center, lcd_color);
+        return display_draw_pixel(x_center, y_center, color);
     }
 
     int d = 3 - 2 * radius;    
@@ -556,7 +573,7 @@ esp_err_t display_draw_circle(int x_center, int y_center, int radius, uint16_t c
 
     while(x <= y)
     {
-        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, lcd_color);
+        esp_err_t ret = display_draw_circle_points(x_center, y_center, x, y, color);
         if (ret != ESP_OK)
         {
             return ret;
@@ -582,18 +599,18 @@ static esp_err_t display_fill_circle_lines(int x_center, int y_center, int x, in
 {
 
     esp_err_t ret;
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
-    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, lcd_color);
+    ret = display_draw_hline(x_center - x, y_center + y, x_center + x, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, lcd_color);
+    ret = display_draw_hline(x_center - x, y_center - y, x_center + x, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, lcd_color);
+    ret = display_draw_hline(x_center - y, y_center + x, x_center + y, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, lcd_color);
+    ret = display_draw_hline(x_center - y, y_center - x, x_center + y, color);
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
@@ -606,7 +623,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
         return ESP_ERR_INVALID_STATE;
     }
 
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
     if (radius < 0)
     {
@@ -615,7 +632,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 
     if (radius == 0)
     {
-        return display_draw_pixel(x_center, y_center, lcd_color);
+        return display_draw_pixel(x_center, y_center, color);
     }
 
     int d = 3-2 * radius;
@@ -624,7 +641,7 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 
     while(x <= y)
     {
-        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, lcd_color);
+        esp_err_t ret = display_fill_circle_lines(x_center, y_center, x, y, color);
         if (ret != ESP_OK) 
         {
             return ret;
@@ -649,15 +666,15 @@ esp_err_t display_fill_circle(int x_center, int y_center, int radius, uint16_t c
 esp_err_t display_draw_triangle(int x1, int y1, int x2, int y2, int x3, int y3, uint16_t color)
 {
     esp_err_t ret;
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
-    ret = display_draw_line(x1, y1, x2, y2, lcd_color);
+    ret = display_draw_line(x1, y1, x2, y2, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_line(x2, y2, x3, y3, lcd_color);
+    ret = display_draw_line(x2, y2, x3, y3, color);
     if (ret != ESP_OK) return ret;
 
-    ret = display_draw_line(x3, y3, x1, y1, lcd_color);
+    ret = display_draw_line(x3, y3, x1, y1, color);
     if (ret != ESP_OK) return ret;
 
     return ESP_OK;
@@ -712,7 +729,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
     if (p2.y < p3.y) swap_points(&p2, &p3);
     if (p1.y < p2.y) swap_points(&p1, &p2);
 
-    const uint16_t lcd_color = display_format_color(color);
+    // const uint16_t lcd_color = display_format_color(color);
 
     // ---------- Flat Top ----------
     if (p1.y == p2.y)
@@ -740,7 +757,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
                 MIN(x_left, x_right),
                 y,
                 MAX(x_left, x_right),
-                lcd_color);
+                color);
 
             if (ret != ESP_OK)
                 return ret;
@@ -776,7 +793,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
             MIN(x_left, x_right),
             y,
             MAX(x_left, x_right),
-            lcd_color);
+            color);
 
         if (ret != ESP_OK)
             return ret;
@@ -807,7 +824,7 @@ esp_err_t display_fill_triangle(int x1, int y1,
             MIN(x_left, x_right),
             y,
             MAX(x_left, x_right),
-            lcd_color);
+            color);
 
         if (ret != ESP_OK)
             return ret;
