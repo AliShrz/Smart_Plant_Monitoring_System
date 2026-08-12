@@ -34,15 +34,12 @@
  *==========================*/
 
 #define SUN_RADIUS                 8
-
-#define SUN_RAY_COUNT              8
-
 #define SUN_RAY_GAP                2
 
 #define SUN_RAY_MIN_LENGTH         2
 #define SUN_RAY_MAX_LENGTH         8
 
-#define SUN_TEXT_OFFSET_Y          6
+#define SUN_TEXT_OFFSET_Y          10
 #define MAX_LIGHT_LUX              10000
 
 /*==========================
@@ -61,12 +58,6 @@
  *==========================*/
 #define HUMIDITY_DROP_RADIUS       7
 #define HUMIDITY_DROP_HEIGHT       10
-
-/*==========================
- * WiFi Widget
- *==========================*/
-#define WIFI_WIDTH   15
-#define WIFI_HEIGHT  9
 
 
 
@@ -188,23 +179,15 @@ static void display_ui_draw_data_percentage(
     int bottom_y,
     uint8_t data_percentage)
 {
-    char text[5];
-
-    snprintf(
-        text,
-        sizeof(text),
-        "%u%%",
-        data_percentage);
-
     display_printf(
         center_x,
-        bottom_y ,
+        bottom_y,
         &display_font_5x7,
         UI_COLOR_TEXT,
         UI_COLOR_BACKGROUND,
         DISPLAY_BACKGROUND_TRANSPARENT,
-        "%s",
-        text);
+        "%u%%",
+        data_percentage);
 }
 
 // =========================
@@ -310,49 +293,90 @@ void display_ui_draw_pot(
 
 /**************** sun *****************/
 
-static const display_vector2i_t sun_rays[SUN_RAY_COUNT] =
-{
-    {  0, -1 },   // Up
-    {  1, -1 },   // Up Right
-    {  1,  0 },   // Right
-    {  1,  1 },   // Down Right
-    {  0,  1 },   // Down
-    { -1,  1 },   // Down Left
-    { -1,  0 },   // Left
-    { -1, -1 },   // Up Left
-};
-
 static void display_ui_draw_sun_rays(
     int x,
     int y,
     int ray_length,
     uint16_t color)
 {
-    for (int i = 0; i < SUN_RAY_COUNT; i++)
-    {
-        int x_start =
-            x + sun_rays[i].dx * (SUN_RADIUS + SUN_RAY_GAP);
+    int cardinal_offset =
+        SUN_RADIUS + SUN_RAY_GAP;
 
-        int y_start =
-            y + sun_rays[i].dy * (SUN_RADIUS + SUN_RAY_GAP);
+    int diagonal_offset =
+        (SUN_RADIUS * 7) / 10 + SUN_RAY_GAP;
 
-        int x_end =
-            x + sun_rays[i].dx *
-            (SUN_RADIUS + SUN_RAY_GAP + ray_length);
+    /* Up */
 
-        int y_end =
-            y + sun_rays[i].dy *
-            (SUN_RADIUS + SUN_RAY_GAP + ray_length);
+    display_draw_line(
+        x,
+        y - cardinal_offset,
+        x,
+        y - cardinal_offset - ray_length,
+        color);
 
-        display_draw_line(
-            x_start,
-            y_start,
-            x_end,
-            y_end,
-            color);
-    }
+    /* Up-right */
+
+    display_draw_line(
+        x + diagonal_offset,
+        y - diagonal_offset,
+        x + diagonal_offset + ray_length,
+        y - diagonal_offset - ray_length,
+        color);
+
+    /* Right */
+
+    display_draw_line(
+        x + cardinal_offset,
+        y,
+        x + cardinal_offset + ray_length,
+        y,
+        color);
+
+    /* Down-right */
+
+    display_draw_line(
+        x + diagonal_offset,
+        y + diagonal_offset,
+        x + diagonal_offset + ray_length,
+        y + diagonal_offset + ray_length,
+        color);
+
+    /* Down */
+
+    display_draw_line(
+        x,
+        y + cardinal_offset,
+        x,
+        y + cardinal_offset + ray_length,
+        color);
+
+    /* Down-left */
+
+    display_draw_line(
+        x - diagonal_offset,
+        y + diagonal_offset,
+        x - diagonal_offset - ray_length,
+        y + diagonal_offset + ray_length,
+        color);
+
+    /* Left */
+
+    display_draw_line(
+        x - cardinal_offset,
+        y,
+        x - cardinal_offset - ray_length,
+        y,
+        color);
+
+    /* Up-left */
+
+    display_draw_line(
+        x - diagonal_offset,
+        y - diagonal_offset,
+        x - diagonal_offset - ray_length,
+        y - diagonal_offset - ray_length,
+        color);
 }
-
 
 void display_ui_draw_sun(
     int x,
@@ -389,14 +413,9 @@ void display_ui_draw_sun(
         SUN_RADIUS,
         UI_COLOR_SUN_RAY);
 
-    display_ui_draw_data_percentage(
-        x,
-        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS + 8,
-        (lux * 100) / MAX_LIGHT_LUX);
-
     display_printf(
         x - 25,
-        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS + 18,
+        y + SUN_RAY_MAX_LENGTH + SUN_RADIUS + SUN_TEXT_OFFSET_Y,
         &display_font_5x7,
         UI_COLOR_TEXT,
         UI_COLOR_BACKGROUND,
@@ -607,68 +626,6 @@ void display_ui_draw_humidity(
 
 /**************** WiFi ****************/
 
-static void display_ui_draw_wifi_quarter_arc(
-    int x_center,
-    int y_center,
-    int radius,
-    uint16_t color)
-{
-    int x = 0;
-    int y = radius;
-
-    int d = 3 - 2 * radius;
-
-    while (x <= y)
-    {
-        /*
-         * Rotate 45 degrees counter-clockwise.
-         *
-         * x' = (x - y) / sqrt(2)
-         * y' = -(x + y) / sqrt(2)
-         *
-         * 1 / sqrt(2) ≈ 0.7071
-         */
-
-        int rx =
-            (int)((x - y) * 0.7071f);
-
-        int ry =
-            (int)(-(x + y) * 0.7071f);
-
-        display_draw_pixel(
-            x_center + rx,
-            y_center + ry,
-            color);
-
-        /*
-         * Second symmetric point
-         */
-
-        rx =
-            (int)((y - x) * 0.7071f);
-
-        ry =
-            (int)(-(x + y) * 0.7071f);
-
-        display_draw_pixel(
-            x_center + rx,
-            y_center + ry,
-            color);
-
-        if (d < 0)
-        {
-            d += 4 * x + 6;
-        }
-        else
-        {
-            d += 4 * (x - y) + 10;
-            y--;
-        }
-
-        x++;
-    }
-}
-
 static void display_ui_draw_wifi_icon(
     int x,
     int y,
@@ -676,26 +633,35 @@ static void display_ui_draw_wifi_icon(
 {
     /* Outer arc */
 
-    display_ui_draw_wifi_quarter_arc(
-        x,
-        y,
-        6,
-        color);
+    display_draw_pixel(x - 5, y - 4, color);
+    display_draw_pixel(x - 4, y - 5, color);
+    display_draw_pixel(x - 3, y - 6, color);
+    display_draw_pixel(x - 2, y - 7, color);
+    display_draw_pixel(x - 1, y - 7, color);
+
+    display_draw_pixel(x, y - 7, color);
+
+    display_draw_pixel(x + 5, y - 4, color);
+    display_draw_pixel(x + 4, y - 5, color);
+    display_draw_pixel(x + 3, y - 6, color);
+    display_draw_pixel(x + 2, y - 7, color);
+    display_draw_pixel(x + 1, y - 7, color);
 
     /* Inner arc */
 
-    display_ui_draw_wifi_quarter_arc(
-        x,
-        y,
-        3,
-        color);
+    display_draw_pixel(x - 3, y - 2, color);
+    display_draw_pixel(x - 2, y - 3, color);
+
+    display_draw_pixel(x - 1, y - 4, color);
+    display_draw_pixel(x, y - 4, color);
+    display_draw_pixel(x + 1, y - 4, color);
+
+    display_draw_pixel(x + 3, y - 2, color);
+    display_draw_pixel(x + 2, y - 3, color);
 
     /* Center dot */
 
-    display_draw_pixel(
-        x,
-        y,
-        color);
+    display_draw_pixel(x, y, color);
 }
 
 void display_ui_draw_wifi(
@@ -708,23 +674,18 @@ void display_ui_draw_wifi(
         return;
     }
 
-    if (!data->wifi_connected)
-    {
-        display_printf(
-            x - 5,
-            y - 5,
-            &display_font_5x7,
-            COLOR_RED,
-            UI_COLOR_BACKGROUND,
-            DISPLAY_BACKGROUND_TRANSPARENT,
-            "NA");
-        return;
-    }
-
     display_ui_draw_wifi_icon(
         x,
         y,
-        data->wifi_connected
-            ? UI_COLOR_WIFI
-            : COLOR_RED);
+        COLOR_BLACK);
+
+    if (!data->wifi_connected)
+    {
+        display_draw_line(
+            x - 4,
+            y - 7,
+            x + 3,
+            y,
+            COLOR_BLACK);
+    }
 }
