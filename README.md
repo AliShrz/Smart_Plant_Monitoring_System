@@ -28,7 +28,7 @@ Display UI Development
 
 **Overall Progress**
 
-🟩🟩🟩🟩🟩🟩⬜⬜⬜⬜
+🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜
 
 ### Completed
 
@@ -76,15 +76,36 @@ Display UI Development
 - IP address API
 - RSSI API
 
+#### Display UI
+
+- Modular widget-based UI
+- Plant pot widget
+- Soil moisture visualization
+- Plant / cactus graphic
+- Sun widget
+- Dynamic sun rays
+- Light intensity display
+- Temperature thermometer
+- Dynamic temperature fill
+- Humidity drop widget
+- Wi-Fi status widget
+- Real sensor data integration
+- Golden-ratio based layout
+- Widget spacing and alignment
+
 ### In Progress
 
-- Display UI
+- Internet time and date synchronization
+- Display data flow
+- Cloud communication
 
 ### Planned
 
-* Cloud backend
-* Web dashboard
-* Plant health recommendations
+- Cloud backend
+- Web dashboard
+- Historical data visualization
+- Multiple plant monitoring
+- Plant health recommendations
 
 ---
 
@@ -100,19 +121,22 @@ Display UI Development
 
 ## Display Node
 
-* ST7735 LCD driver
-* Graphics primitives
-* Bitmap font rendering
-* Formatted text rendering
-* Multiple plant pages
-* Simple graphical interface
+- ESP32 DevKit
+- ST7735 SPI TFT Display
+- Graphics primitives
+- Bitmap font rendering
+- Multiple plant pages
+- Real-time sensor visualization
+- Internet-synchronized time and date
+- Simple graphical interface
 
 ## Dashboard
 
-* Real-time monitoring
-* Historical sensor graphs
-* Plant health overview
-* Intelligent care suggestions
+- Real-time monitoring
+- Historical sensor graphs
+- Plant health overview
+- Multiple plant monitoring
+- Intelligent care suggestions
 
 ---
 
@@ -120,15 +144,16 @@ Display UI Development
 
 ## Sensor Node
 
-* ESP32 DevKit
-* Capacitive Soil Moisture Sensor
-* BH1750 Light Sensor
-* AHT20 Temperature & Humidity Sensor
+- ESP32 DevKit
+- Capacitive Soil Moisture Sensor
+- BH1750 Light Sensor
+- AHT20 Temperature & Humidity Sensor
+- BMP280 Pressure & Temperature Sensor
 
 ## Display Node
 
-* ESP32 DevKit
-* ST7735 SPI TFT Display
+- ESP32 DevKit
+- ST7735 SPI TFT Display
 
 ---
 
@@ -218,13 +243,15 @@ idf.py monitor
 ## Phase 4 — Connectivity
 
 * [x] Wi-Fi
-* [ ] Display UI
+* [x] Display UI
 * [ ] Cloud communication
 
 ## Phase 5 — Dashboard
 
+* [ ] Cloud backend
 * [ ] Historical data
 * [ ] Multiple plant monitoring
+* [ ] Real-time monitoring
 * [ ] Plant health suggestions
 
 ---
@@ -248,29 +275,41 @@ idf.py monitor
 | 2026-07 | Added BH1750 ambient light sensor driver        |
 | 2026-08 | Added soil moisture calibration                 |
 | 2026-08 | Implemented Wi-Fi manager driver                |
+| 2026-08 | Implemented modular display UI widgets          |
 
 ---
 
 # Architecture
 
 ```text
-Application
-      │
-      ▼
-┌──────────────────────────────────────────────┐
-│                Display UI                    │
-└──────────────────────────────────────────────┘
-      │
-      ▼
-┌──────────────────────────────────────────────┐
-│ Drivers                                      │
-│ Display │ Wi-Fi │ Sensors │ Bus              │
-└──────────────────────────────────────────────┘
-      │
-      ▼
-┌──────────────────────────────────────────────┐
-│                  ESP-IDF                     │
-└──────────────────────────────────────────────┘
+                         Application
+                              │
+                              ▼
+                ┌─────────────────────────┐
+                │       Display UI        │
+                │                         │
+                │  Pot │ Sun │ Temp │ ... │
+                └────────────┬────────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+              ▼                             ▼
+      ┌────────────────┐           ┌─────────────────┐
+      │ Graphics / Font│           │   Wi-Fi Manager │
+      │     Engine     │           │                 │
+      └───────┬────────┘           └───────┬─────────┘
+              │                            │
+              ▼                            ▼
+      ┌──────────────────────────────────────────────┐
+      │                  ESP-IDF                     │
+      └──────────────────────────────────────────────┘
+              │
+              ▼
+      ┌──────────────────────────────────────────────┐
+      │             Sensor / Bus Drivers             │
+      │                                              │
+      │  I2C │ ADC │ AHT20 │ BMP280 │ BH1750         │
+      └──────────────────────────────────────────────┘
 ```
 
 ---
@@ -283,7 +322,7 @@ Application
 
 ## Sensors
 
-- Soil Moisture (ADC + Calibration)
+- Soil Moisture (ADC One-Shot + Calibration)
 - AHT20
 - BMP280
 - BH1750
@@ -294,6 +333,15 @@ Application
 - Graphics primitives
 - Bitmap font engine
 - Formatted text rendering
+- Display UI framework
+- Sensor visualization widgets
+
+## Connectivity
+- Wi-Fi Manager
+- Automated reconnect
+- Connection Status
+- IP adress API
+- RSSI API
 
 ---
 # License
