@@ -75,6 +75,7 @@ Display UI Development
 - Connection management
 - IP address API
 - RSSI API
+- Internet time and date synchronization
 
 #### Display UI
 
@@ -95,7 +96,6 @@ Display UI Development
 
 ### In Progress
 
-- Internet time and date synchronization
 - Display data flow
 - Cloud communication
 
@@ -247,6 +247,7 @@ idf.py monitor
 
 * [x] Wi-Fi
 * [x] Display UI
+* [x] Time synchronization
 * [ ] Cloud communication
 
 ## Phase 5 — Dashboard
@@ -279,6 +280,7 @@ idf.py monitor
 | 2026-08 | Added soil moisture calibration                 |
 | 2026-08 | Implemented Wi-Fi manager driver                |
 | 2026-08 | Implemented modular display UI widgets          |
+| 2026-08 | Added NTP time synchronization                  |
 
 ---
 
