@@ -16,5 +16,6 @@ idf_component_register(
         esp_event
         wifi
         display_ui
+        time
 )
 

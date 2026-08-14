@@ -1,43 +1,4 @@
-/* 
-Milestone 2 — Widgets Framework
-display_ui_draw_pot()
-display_ui_draw_sun()
-display_ui_draw_temperature()
-display_ui_draw_humidity()
-display_ui_draw_wifi()
 
-Milestone 3 — Pot Widget
-☐ Pot Outline
-☐ Plant
-☐ Water Fill
-☐ Percentage
-
-Milestone 4 — Sun Widget
-☐ Circle
-☐ Rays
-☐ Dynamic Ray Length
-☐ Lux Text
-
-Milestone 5 — Temperature Widget
-Thermometer
-Temperature
-
-Milestone 6 — Humidity Widget
-Water Drop
-Humidity
-
-Milestone 7 — Wi-Fi Widget
-Dynamic Signal Bars
-Connected
-Disconnected
-
-Milestone 8 — Final Polish
-Spacing
-Alignment
-Colors
-Fonts
-
-*/
 #include "display.h"
 #include "display_ui.h"
 #include "display_ui_widgets.h"
@@ -88,7 +49,7 @@ static const char *TAG = "display_ui";
 #define HEADER_WIFI_X           60
 #define HEADER_WIFI_Y           10
 
-#define HEADER_TIME_X           82
+#define HEADER_TIME_X           78
 #define HEADER_TIME_Y           3
 
 #define HEADER_DATE_X           60

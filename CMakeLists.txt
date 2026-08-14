@@ -25,6 +25,9 @@ set(EXTRA_COMPONENT_DIRS
 
     # WiFi
     components/wifi
+
+    # time
+    components/time
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
