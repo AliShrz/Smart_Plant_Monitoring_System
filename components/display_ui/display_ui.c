@@ -49,7 +49,7 @@ static const char *TAG = "display_ui";
 #define HEADER_WIFI_X           60
 #define HEADER_WIFI_Y           10
 
-#define HEADER_TIME_X           82
+#define HEADER_TIME_X           78
 #define HEADER_TIME_Y           3
 
 #define HEADER_DATE_X           60

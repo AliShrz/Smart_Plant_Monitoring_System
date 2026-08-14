@@ -10,6 +10,7 @@
 #include "display.h"
 #include "display_ui.h"
 #include "wifi_manager.h"
+#include "time_manager.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_event.h"
@@ -60,7 +61,16 @@ void app_main(void)
         "RSSI: %d dBm",
         wifi_manager_get_rssi());
 
-    // /*******************/
+    /*******************/
+    ret = time_manager_init();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize time manager: %s", esp_err_to_name(ret));
+        return;
+    }
+
+    time_manager_sync();
+    /*****************/
 
     ret = display_init();
     if (ret != ESP_OK)
@@ -198,6 +208,25 @@ void app_main(void)
         ui.wifi_connected = wifi_manager_is_connected();
         ui.wifi_rssi = wifi_manager_get_rssi();
 
+        if (time_manager_is_synced())
+        {
+            ret = time_manager_get_time_and_date(
+                ui.time,
+                sizeof(ui.time),
+                ui.date,
+                sizeof(ui.date));
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(TAG, "Failed to get time and date: %s", esp_err_to_name(ret));
+                return;
+            }
+            ESP_LOGI(TAG, "Time: %s", ui.time);
+            ESP_LOGI(TAG, "Date: %s", ui.date);
+        }
+        else
+        {
+            ESP_LOGW(TAG, "Time is not synchronized yet.");
+        }
 
         ret = display_ui_show(&ui);
         if (ret != ESP_OK)
@@ -205,7 +234,7 @@ void app_main(void)
             ESP_LOGE(TAG, "Failed to show display UI: %s", esp_err_to_name(ret));
             return;
         }
-        
+
         // if (count == 10)
         // {
         //     count = 0;
