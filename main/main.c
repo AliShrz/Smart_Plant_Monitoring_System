@@ -25,6 +25,28 @@
 
 static const char *TAG = "main";
 
+system_data_t system_data = {
+    .plant_id = 1,
+
+    .time = "",
+
+    .date = "",
+
+    .wifi_connected = false,
+
+    .soil_moisture_percent = 0,
+
+    .temperature_c = 0.0,
+
+    .humidity_percent = 0.0,
+
+    .pressure_hpa = 0,
+
+    .light_lux = 0,
+
+    .wifi_ip = "",
+};
+
 void app_main(void)
 {
     esp_err_t ret;
@@ -55,6 +77,12 @@ void app_main(void)
     {
         ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&ip));
     }
+
+    esp_ip4addr_ntoa(
+        &ip,
+        system_data.wifi_ip,
+        sizeof(system_data.wifi_ip)
+    );
 
     ESP_LOGI(
         TAG,
@@ -146,25 +174,6 @@ void app_main(void)
         return;
     }
     
-    system_data_t data = {
-        .plant_id = 1,
-
-        .time = "2:13 AM",
-
-        .date = "06 Aug 2026",
-
-        .wifi_connected = wifi_manager_is_connected(),
-
-        .soil_moisture_percent = 0,
-
-        .temperature_c = 0.0,
-
-        .humidity_percent = 0.0,
-
-        .pressure_hpa = 0,
-
-        .light_lux = 0,
-        };
 
     // int8_t wifi_rssi;
     // char ip_string[16];
@@ -200,35 +209,35 @@ void app_main(void)
             return;
         }
 
-        data.soil_moisture_percent = soil_moisture_data.moisture_percentage;
-        data.temperature_c = bmp280_data.temperature;
-        data.humidity_percent = sensor_data.humidity;
-        data.pressure_hpa = bmp280_data.pressure;
-        data.light_lux = bh1750_data.lux;
-        data.wifi_connected = wifi_manager_is_connected();
-        data.wifi_rssi = wifi_manager_get_rssi();
+        system_data.soil_moisture_percent = soil_moisture_data.moisture_percentage;
+        system_data.temperature_c = bmp280_data.temperature;
+        system_data.humidity_percent = sensor_data.humidity;
+        system_data.pressure_hpa = bmp280_data.pressure;
+        system_data.light_lux = bh1750_data.lux;
+        system_data.wifi_connected = wifi_manager_is_connected();
+        system_data.wifi_rssi = wifi_manager_get_rssi();
 
         if (time_manager_is_synced())
         {
             ret = time_manager_get_time_and_date(
-                data.time,
-                sizeof(data.time),
-                data.date,
-                sizeof(data.date));
+                system_data.time,
+                sizeof(system_data.time),
+                system_data.date,
+                sizeof(system_data.date));
             if (ret != ESP_OK)
             {
                 ESP_LOGE(TAG, "Failed to get time and date: %s", esp_err_to_name(ret));
                 return;
             }
-            ESP_LOGI(TAG, "Time: %s", data.time);
-            ESP_LOGI(TAG, "Date: %s", data.date);
+            ESP_LOGI(TAG, "Time: %s", system_data.time);
+            ESP_LOGI(TAG, "Date: %s", system_data.date);
         }
         else
         {
             ESP_LOGW(TAG, "Time is not synchronized yet.");
         }
 
-        ret = display_ui_show(&data);
+        ret = display_ui_show(&system_data);
         if (ret != ESP_OK)
         {
             ESP_LOGE(TAG, "Failed to show display UI: %s", esp_err_to_name(ret));
