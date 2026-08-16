@@ -94,9 +94,14 @@ Display UI Development
 - Golden-ratio based layout
 - Widget spacing and alignment
 
+#### System Data
+
+- Centralized system data structure
+- Application data flow
+
 ### In Progress
 
-- Display data flow
+- Application initialization and error handling
 - Cloud communication
 
 ### Planned
@@ -178,8 +183,11 @@ Smart_Plant_Monitoring_System/
 │   ├── time/
 │   │   └── time_manager/
 │   │
-│   └── wifi/
-│       └── wifi_manager/
+│   ├── wifi/
+│   │   └── wifi_manager/
+│   │
+│   └── system_data/
+│    
 │
 ├── main/
 │   └── main.c
@@ -248,6 +256,7 @@ idf.py monitor
 * [x] Wi-Fi
 * [x] Display UI
 * [x] Time synchronization
+* [x] System data flow
 * [ ] Cloud communication
 
 ## Phase 5 — Dashboard
@@ -281,40 +290,58 @@ idf.py monitor
 | 2026-08 | Implemented Wi-Fi manager driver                |
 | 2026-08 | Implemented modular display UI widgets          |
 | 2026-08 | Added NTP time synchronization                  |
+| 2026-08 | Added system data structure and data flow       |
 
 ---
 
 # Architecture
 
 ```text
-                         Application
-                              │
-                              ▼
-                ┌─────────────────────────┐
-                │       Display UI        │
-                │                         │
-                │  Pot │ Sun │ Temp │ ... │
-                └────────────┬────────────┘
-                             │
-              ┌──────────────┴──────────────┐
-              │                             │
-              ▼                             ▼
-      ┌────────────────┐           ┌─────────────────┐
-      │ Graphics / Font│           │   Wi-Fi Manager │
-      │     Engine     │           │                 │
-      └───────┬────────┘           └───────┬─────────┘
-              │                            │
-              ▼                            ▼
-      ┌──────────────────────────────────────────────┐
-      │                  ESP-IDF                     │
-      └──────────────────────────────────────────────┘
+                              APPLICATION
+                                  │
+                                  │ owns & updates
+                                  ▼
+                        ┌───────────────────┐
+                        │   system_data_t   │
+                        └─────────┬─────────┘
+                                  │
+                         ┌────────┴────────┐
+                         │                 │
+                       reads             reads
+                         │                 │
+                         ▼                 ▼
+                 ┌──────────────┐   ┌──────────────┐
+                 │  Display UI  │   │ Cloud Backend│
+                 │              │   │   (planned)  │
+                 └──────┬───────┘   └──────────────┘
+                        │
+                        ▼
+                 ┌──────────────┐
+                 │   Graphics   │
+                 │  + Font      │
+                 └──────┬───────┘
+                        │
+                        ▼
+                    ST7735 LCD
+
+
+      ┌────────────────┐
+      │ Sensor Drivers │
+      └───────┬────────┘
               │
+              │ measurements
               ▼
-      ┌──────────────────────────────────────────────┐
-      │             Sensor / Bus Drivers             │
-      │                                              │
-      │  I2C │ ADC │ AHT20 │ BMP280 │ BH1750         │
-      └──────────────────────────────────────────────┘
+         APPLICATION
+
+
+      ┌────────────────┐
+      │ Wi-Fi Manager  │──── connection / RSSI / IP ────►
+      └────────────────┘                                  │
+                                                          ▼
+                                                 ┌───────────────────┐
+      ┌────────────────┐                         │   system_data_t   │
+      │ Time Manager   │──── time / date ───────►│                   │
+      └────────────────┘                         └───────────────────┘
 ```
 
 ---
@@ -342,11 +369,18 @@ idf.py monitor
 - Sensor visualization widgets
 
 ## Connectivity
+
 - Wi-Fi Manager
 - Automated reconnect
 - Connection Status
-- IP adress API
+- IP address API
 - RSSI API
+- Internet time and date synchronization
+
+## Application Data
+
+- Centralized system data structure
+- Shared data flow between application and display
 
 ---
 # License
