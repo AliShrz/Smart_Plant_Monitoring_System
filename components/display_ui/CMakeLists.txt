@@ -9,4 +9,5 @@ idf_component_register(
     REQUIRES
         display
         esp_netif
+        system_data
 )
