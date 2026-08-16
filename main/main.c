@@ -25,30 +25,30 @@
 
 static const char *TAG = "main";
 
-system_data_t system_data = {
-    .plant_id = 1,
-
-    .time = "",
-
-    .date = "",
-
-    .wifi_connected = false,
-
-    .soil_moisture_percent = 0,
-
-    .temperature_c = 0.0,
-
-    .humidity_percent = 0.0,
-
-    .pressure_hpa = 0,
-
-    .light_lux = 0,
-
-    .wifi_ip = "",
-};
-
 void app_main(void)
 {
+    system_data_t system_data = {
+        .plant_id = 1,
+
+        .time = "",
+
+        .date = "",
+
+        .wifi_connected = false,
+
+        .soil_moisture_percent = 0,
+
+        .temperature_c = 0.0,
+
+        .humidity_percent = 0.0,
+
+        .pressure_hpa = 0,
+
+        .light_lux = 0,
+
+        .wifi_ip = "",
+        };
+
     esp_err_t ret;
     
     ESP_ERROR_CHECK(nvs_flash_init());
