@@ -28,6 +28,9 @@ set(EXTRA_COMPONENT_DIRS
 
     # time
     components/time
+
+    # Data flow
+    components/system_data
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

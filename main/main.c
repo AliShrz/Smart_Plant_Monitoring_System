@@ -146,7 +146,7 @@ void app_main(void)
         return;
     }
     
-    display_ui_data_t ui = {
+    system_data_t data = {
         .plant_id = 1,
 
         .time = "2:13 AM",
@@ -200,35 +200,35 @@ void app_main(void)
             return;
         }
 
-        ui.soil_moisture_percent = soil_moisture_data.moisture_percentage;
-        ui.temperature_c = bmp280_data.temperature;
-        ui.humidity_percent = sensor_data.humidity;
-        ui.pressure_hpa = bmp280_data.pressure;
-        ui.light_lux = bh1750_data.lux;
-        ui.wifi_connected = wifi_manager_is_connected();
-        ui.wifi_rssi = wifi_manager_get_rssi();
+        data.soil_moisture_percent = soil_moisture_data.moisture_percentage;
+        data.temperature_c = bmp280_data.temperature;
+        data.humidity_percent = sensor_data.humidity;
+        data.pressure_hpa = bmp280_data.pressure;
+        data.light_lux = bh1750_data.lux;
+        data.wifi_connected = wifi_manager_is_connected();
+        data.wifi_rssi = wifi_manager_get_rssi();
 
         if (time_manager_is_synced())
         {
             ret = time_manager_get_time_and_date(
-                ui.time,
-                sizeof(ui.time),
-                ui.date,
-                sizeof(ui.date));
+                data.time,
+                sizeof(data.time),
+                data.date,
+                sizeof(data.date));
             if (ret != ESP_OK)
             {
                 ESP_LOGE(TAG, "Failed to get time and date: %s", esp_err_to_name(ret));
                 return;
             }
-            ESP_LOGI(TAG, "Time: %s", ui.time);
-            ESP_LOGI(TAG, "Date: %s", ui.date);
+            ESP_LOGI(TAG, "Time: %s", data.time);
+            ESP_LOGI(TAG, "Date: %s", data.date);
         }
         else
         {
             ESP_LOGW(TAG, "Time is not synchronized yet.");
         }
 
-        ret = display_ui_show(&ui);
+        ret = display_ui_show(&data);
         if (ret != ESP_OK)
         {
             ESP_LOGE(TAG, "Failed to show display UI: %s", esp_err_to_name(ret));

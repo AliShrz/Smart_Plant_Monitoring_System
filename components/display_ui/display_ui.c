@@ -76,7 +76,7 @@ static const char *TAG = "display_ui";
 
 static void display_ui_draw_layout(void);
 
-static void display_ui_draw_header(const display_ui_data_t *data);
+static void display_ui_draw_header(const system_data_t *data);
 
 
 /* ===========================
@@ -88,7 +88,7 @@ esp_err_t display_ui_init(void)
     return ESP_OK;
 }
 
-esp_err_t display_ui_show(display_ui_data_t *data)
+esp_err_t display_ui_show(system_data_t *data)
 {
     // if (data == NULL)
     // {
@@ -150,7 +150,7 @@ static void display_ui_draw_layout(void)
 }
 
 static void display_ui_draw_header(
-    const display_ui_data_t *data)
+    const system_data_t *data)
 {
     display_printf(
         HEADER_TITLE_X,

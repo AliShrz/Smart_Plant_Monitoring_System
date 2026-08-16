@@ -195,7 +195,7 @@ static void display_ui_draw_data_percentage(
 void display_ui_draw_pot(
     int x,
     int y,
-    const display_ui_data_t *data)
+    const system_data_t *data)
 {
     (void)data;
 
@@ -381,7 +381,7 @@ static void display_ui_draw_sun_rays(
 void display_ui_draw_sun(
     int x,
     int y,
-    const display_ui_data_t *data)
+    const system_data_t *data)
 {
     uint32_t lux = data->light_lux;
 
@@ -514,7 +514,7 @@ static void display_ui_draw_thermometer(
 void display_ui_draw_temperature(
     int x,
     int y,
-    const display_ui_data_t *data)
+    const system_data_t *data)
 {
     display_ui_draw_thermometer(x, y);
 
@@ -600,7 +600,7 @@ static void display_ui_draw_humidity_drop(
 void display_ui_draw_humidity(
     int x,
     int y,
-    const display_ui_data_t *data)
+    const system_data_t *data)
 {
     display_ui_draw_humidity_drop(x, y);
 
@@ -667,7 +667,7 @@ static void display_ui_draw_wifi_icon(
 void display_ui_draw_wifi(
     int x,
     int y,
-    const display_ui_data_t *data)
+    const system_data_t *data)
 {
     if (data == NULL)
     {
