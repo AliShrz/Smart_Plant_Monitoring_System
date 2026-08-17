@@ -53,4 +53,4 @@ void display_ui_draw_humidity(
 void display_ui_draw_wifi(
     int x,
     int y,
-    const system_data_t *data);
+    const system_state_t *data);

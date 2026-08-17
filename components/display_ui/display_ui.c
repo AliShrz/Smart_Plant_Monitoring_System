@@ -88,7 +88,7 @@ esp_err_t display_ui_init(void)
     return ESP_OK;
 }
 
-esp_err_t display_ui_show(system_data_t *data)
+esp_err_t display_ui_show(system_state_t *state)
 {
     // if (data == NULL)
     // {
@@ -98,17 +98,17 @@ esp_err_t display_ui_show(system_data_t *data)
 
     display_ui_draw_layout();
 
-    display_ui_draw_header(data);
+    display_ui_draw_header(&state->data);
 
-    display_ui_draw_pot( POT_X, POT_Y, data);
+    display_ui_draw_pot( POT_X, POT_Y, &state->data);
 
-    display_ui_draw_sun( SUN_X, SUN_Y, data);
+    display_ui_draw_sun( SUN_X, SUN_Y, &state->data);
 
-    display_ui_draw_temperature( TEMP_X, TEMP_Y, data);
+    display_ui_draw_temperature( TEMP_X, TEMP_Y, &state->data);
 
-    display_ui_draw_humidity( HUMIDITY_X, HUMIDITY_Y, data);
+    display_ui_draw_humidity( HUMIDITY_X, HUMIDITY_Y, &state->data);
 
-    display_ui_draw_wifi( HEADER_WIFI_X, HEADER_WIFI_Y, data);
+    display_ui_draw_wifi( HEADER_WIFI_X, HEADER_WIFI_Y, state);
     
     return ESP_OK;
 }

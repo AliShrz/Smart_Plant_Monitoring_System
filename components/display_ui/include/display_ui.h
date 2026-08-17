@@ -7,7 +7,7 @@
 #include "esp_netif_ip_addr.h"
 
 #include "display.h"
-#include "system_data.h"
+#include "system_state.h"
 
 // typedef struct
 // {
@@ -38,6 +38,6 @@
 
 esp_err_t display_ui_init(void);
 
-esp_err_t display_ui_show(system_data_t *data);
+esp_err_t display_ui_show(system_state_t *data);
 
 esp_err_t display_ui_deinit(void);
