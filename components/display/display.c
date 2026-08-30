@@ -155,6 +155,11 @@ static esp_err_t backlight_init(void)
     return gpio_config(&io_config);
 }
 
+static esp_err_t backlight_deinit(void)
+{
+    return gpio_reset_pin(PIN_NUM_BCKL);
+}   
+
 static esp_err_t panel_reset(void)
 {
     return esp_lcd_panel_reset(panel_handle);
@@ -189,29 +194,297 @@ esp_err_t display_init(void)
 {
     esp_err_t ret;
 
+    /* Initialize SPI bus */
     ret = spi_bus_init();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to initialize SPI bus: %s",
+            esp_err_to_name(ret));
+        return ret;
+    }
 
+    /* Initialize LCD panel IO */
     ret = lcd_io_init();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to initialize LCD IO: %s",
+            esp_err_to_name(ret));
 
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    /* Initialize LCD panel */
     ret = lcd_panel_init();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to initialize LCD panel: %s",
+            esp_err_to_name(ret));
 
+        /* Cleanup IO */
+        if (io_handle != NULL)
+        {
+            (void)esp_lcd_panel_io_del(io_handle);
+            io_handle = NULL;
+        }
+
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    /* Reset LCD panel */
     ret = panel_reset();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to reset LCD panel: %s",
+            esp_err_to_name(ret));
 
+        /* Cleanup panel */
+        if (panel_handle != NULL)
+        {
+            (void)esp_lcd_panel_del(panel_handle);
+            panel_handle = NULL;
+        }
+
+        /* Cleanup IO */
+        if (io_handle != NULL)
+        {
+            (void)esp_lcd_panel_io_del(io_handle);
+            io_handle = NULL;
+        }
+
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    /* Initialize LCD panel */
     ret = panel_initialize();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to initialize LCD panel: %s",
+            esp_err_to_name(ret));
 
+        /* Cleanup panel */
+        if (panel_handle != NULL)
+        {
+            (void)esp_lcd_panel_del(panel_handle);
+            panel_handle = NULL;
+        }
+
+        /* Cleanup IO */
+        if (io_handle != NULL)
+        {
+            (void)esp_lcd_panel_io_del(io_handle);
+            io_handle = NULL;
+        }
+
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    /* Initialize backlight GPIO */
     ret = backlight_init();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to initialize backlight: %s",
+            esp_err_to_name(ret));
 
+        /* Cleanup panel */
+        if (panel_handle != NULL)
+        {
+            (void)esp_lcd_panel_del(panel_handle);
+            panel_handle = NULL;
+        }
+
+        /* Cleanup IO */
+        if (io_handle != NULL)
+        {
+            (void)esp_lcd_panel_io_del(io_handle);
+            io_handle = NULL;
+        }
+
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    /* Turn display on */
     ret = panel_display_on();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to turn display on: %s",
+            esp_err_to_name(ret));
 
+        /* Cleanup backlight */
+        (void)backlight_deinit();
+
+        /* Cleanup panel */
+        if (panel_handle != NULL)
+        {
+            (void)esp_lcd_panel_del(panel_handle);
+            panel_handle = NULL;
+        }
+
+        /* Cleanup IO */
+        if (io_handle != NULL)
+        {
+            (void)esp_lcd_panel_io_del(io_handle);
+            io_handle = NULL;
+        }
+
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    /* Turn backlight on */
     ret = backlight_on();
-    if (ret != ESP_OK) return ret;
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to turn backlight on: %s",
+            esp_err_to_name(ret));
+
+        /* Turn display off */
+        (void)panel_display_off();
+
+        /* Cleanup backlight */
+        (void)backlight_deinit();
+
+        /* Cleanup panel */
+        if (panel_handle != NULL)
+        {
+            (void)esp_lcd_panel_del(panel_handle);
+            panel_handle = NULL;
+        }
+
+        /* Cleanup IO */
+        if (io_handle != NULL)
+        {
+            (void)esp_lcd_panel_io_del(io_handle);
+            io_handle = NULL;
+        }
+
+        /* Cleanup SPI bus */
+        (void)spi_bus_free(LCD_HOST);
+
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "Display initialized successfully");
+
+    return ESP_OK;
+}
+
+esp_err_t display_deinit(void)
+{
+    esp_err_t ret;
+
+    /* Turn backlight off */
+    ret = backlight_off();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to turn backlight off: %s",
+            esp_err_to_name(ret));
+        return ret;
+    }
+
+    /* Turn display off */
+    if (panel_handle != NULL)
+    {
+        ret = panel_display_off();
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to turn display off: %s",
+                esp_err_to_name(ret));
+            return ret;
+        }
+    }
+
+    /* Deinitialize backlight GPIO */
+    ret = backlight_deinit();
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to deinitialize backlight: %s",
+            esp_err_to_name(ret));
+        return ret;
+    }
+
+    /* Delete LCD panel */
+    if (panel_handle != NULL)
+    {
+        ret = esp_lcd_panel_del(panel_handle);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to delete LCD panel: %s",
+                esp_err_to_name(ret));
+            return ret;
+        }
+
+        panel_handle = NULL;
+    }
+
+    /* Delete LCD panel IO */
+    if (io_handle != NULL)
+    {
+        ret = esp_lcd_panel_io_del(io_handle);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to delete LCD panel IO: %s",
+                esp_err_to_name(ret));
+            return ret;
+        }
+
+        io_handle = NULL;
+    }
+
+    /* Free SPI bus */
+    ret = spi_bus_free(LCD_HOST);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to free SPI bus: %s",
+            esp_err_to_name(ret));
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "Display deinitialized successfully");
 
     return ESP_OK;
 }

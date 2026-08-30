@@ -17,6 +17,6 @@ idf_component_register(
         wifi
         display_ui
         time
-        system_data
+        system_state
 )
 

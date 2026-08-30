@@ -83,38 +83,74 @@ static void display_ui_draw_header(const system_data_t *data);
  * Public API
  * =========================== */
 
-esp_err_t display_ui_init(void)
+esp_err_t display_ui_init(system_state_t *state)
 {
+    if (state == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (state->status.display.display_ui_init)
+    {
+        ESP_LOGW(TAG, "Display UI is already initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    /*
+     * display_ui does not allocate any hardware resources.
+     * It only depends on the display driver being initialized.
+     */
+
+    state->status.display.display_ui_init = true;
+
+    ESP_LOGI(TAG, "Display UI initialized successfully");
+
     return ESP_OK;
 }
 
-esp_err_t display_ui_show(system_data_t *data)
+esp_err_t display_ui_show(system_state_t *state)
 {
-    // if (data == NULL)
-    // {
-    //     return ESP_ERR_INVALID_ARG;
-    // }
+    if (state == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
     display_fill(COLOR_WHITE);
 
     display_ui_draw_layout();
 
-    display_ui_draw_header(data);
+    display_ui_draw_header(&state->data);
 
-    display_ui_draw_pot( POT_X, POT_Y, data);
+    display_ui_draw_pot( POT_X, POT_Y, &state->data);
 
-    display_ui_draw_sun( SUN_X, SUN_Y, data);
+    display_ui_draw_sun( SUN_X, SUN_Y, &state->data);
 
-    display_ui_draw_temperature( TEMP_X, TEMP_Y, data);
+    display_ui_draw_temperature( TEMP_X, TEMP_Y, &state->data);
 
-    display_ui_draw_humidity( HUMIDITY_X, HUMIDITY_Y, data);
+    display_ui_draw_humidity( HUMIDITY_X, HUMIDITY_Y, &state->data);
 
-    display_ui_draw_wifi( HEADER_WIFI_X, HEADER_WIFI_Y, data);
+    display_ui_draw_wifi( HEADER_WIFI_X, HEADER_WIFI_Y, state);
     
     return ESP_OK;
 }
 
-esp_err_t display_ui_deinit(void)
+esp_err_t display_ui_deinit(system_state_t *state)
 {
+    if (state == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!state->status.display.display_ui_init)
+    {
+        ESP_LOGW(TAG, "Display UI is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    state->status.display.display_ui_init = false;
+
+    ESP_LOGI(TAG, "Display UI deinitialized successfully");
+
     return ESP_OK;
 }
 

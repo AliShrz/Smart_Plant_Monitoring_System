@@ -667,7 +667,7 @@ static void display_ui_draw_wifi_icon(
 void display_ui_draw_wifi(
     int x,
     int y,
-    const system_data_t *data)
+    const system_state_t *data)
 {
     if (data == NULL)
     {
@@ -679,7 +679,7 @@ void display_ui_draw_wifi(
         y,
         COLOR_BLACK);
 
-    if (!data->wifi_connected)
+    if (!data->status.wifi.wifi_connected)
     {
         display_draw_line(
             x - 4,
