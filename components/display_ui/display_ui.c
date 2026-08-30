@@ -115,6 +115,12 @@ esp_err_t display_ui_show(system_state_t *state)
         return ESP_ERR_INVALID_ARG;
     }
 
+    if (!state->status.display.display_ui_init)
+    {
+        ESP_LOGW(TAG, "Display UI is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
     display_fill(COLOR_WHITE);
 
     display_ui_draw_layout();
