@@ -458,6 +458,51 @@ void app_main(void)
             ESP_LOGW(TAG, "Soil moisture sensor is not initialized, skipping read.");
         }
 
+
+        /******* AHT20 *******/
+        if (system_state.status.core.i2c_bus_init)
+        {
+            if (!system_state.status.sensors.aht20_init)
+            {
+                ESP_LOGI(
+                    TAG,
+                    "AHT20 is not initialized, attempting to initialize...");
+                
+                ret = aht20_deinit();
+                
+                if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to deinitialize AHT20 sensor: %s",
+                        esp_err_to_name(ret));
+                }
+                else
+                {
+                    ret = aht20_init(bus_handle);
+                
+                    if (ret != ESP_OK)
+                    {
+                        ESP_LOGE(
+                            TAG,
+                            "Failed to initialize AHT20 sensor: %s",
+                            esp_err_to_name(ret));
+                        
+                        system_state.status.sensors.aht20_init = false;
+                    }
+                    else
+                    {
+                        ESP_LOGI(
+                            TAG,
+                            "AHT20 initialized successfully.");
+                        
+                        system_state.status.sensors.aht20_init = true;
+                    }
+                }
+            }
+        }
+
+        
         if(system_state.status.sensors.aht20_init)
         {
             ret = aht20_read(&sensor_data);
@@ -475,6 +520,49 @@ void app_main(void)
         else
         {
             ESP_LOGW(TAG, "AHT20 sensor is not initialized, skipping read.");
+        }
+
+        /******* BMP280 *******/
+        if(system_state.status.core.i2c_bus_init)
+        {
+            if (!system_state.status.sensors.bmp280_init)
+            {
+                ESP_LOGI(
+                    TAG,
+                    "BMP280 is not initialized, attempting to initialize...");
+                
+                ret = bmp280_deinit();
+                
+                if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to deinitialize BMP280 sensor: %s",
+                        esp_err_to_name(ret));
+                }
+                else
+                {
+                    ret = bmp280_init(bus_handle);
+                
+                    if (ret != ESP_OK)
+                    {
+                        ESP_LOGE(
+                            TAG,
+                            "Failed to initialize BMP280 sensor: %s",
+                            esp_err_to_name(ret));
+                        
+                        system_state.status.sensors.bmp280_init = false;
+                    }
+                    else
+                    {
+                        ESP_LOGI(
+                            TAG,
+                            "BMP280 initialized successfully.");
+                        
+                        system_state.status.sensors.bmp280_init = true;
+                    }
+                }
+            }
         }
 
         if(system_state.status.sensors.bmp280_init)
@@ -498,6 +586,49 @@ void app_main(void)
             ESP_LOGW(TAG, "BMP280 sensor is not initialized, skipping read.");
         }
 
+        /******* BH1750 *******/
+        if (system_state.status.core.i2c_bus_init)
+        {
+            if (!system_state.status.sensors.bh1750_init)
+            {
+                ESP_LOGI(
+                    TAG,
+                    "BH1750 is not initialized, attempting to initialize...");
+                
+                ret = bh1750_deinit();
+                
+                if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to deinitialize BH1750 sensor: %s",
+                        esp_err_to_name(ret));
+                }
+                else
+                {
+                    ret = bh1750_init(bus_handle);
+                
+                    if (ret != ESP_OK)
+                    {
+                        ESP_LOGE(
+                            TAG,
+                            "Failed to initialize BH1750 sensor: %s",
+                            esp_err_to_name(ret));
+                        
+                        system_state.status.sensors.bh1750_init = false;
+                    }
+                    else
+                    {
+                        ESP_LOGI(
+                            TAG,
+                            "BH1750 initialized successfully.");
+                        
+                        system_state.status.sensors.bh1750_init = true;
+                    }
+                }
+            }
+        }
+
         if(system_state.status.sensors.bh1750_init)
         {
             ret = bh1750_read(&bh1750_data);
@@ -518,7 +649,7 @@ void app_main(void)
         }
 
 
-
+        /********* Display UI **********/
         if(system_state.status.display.display_ui_init)
         {
             ret = display_ui_show(&system_state);

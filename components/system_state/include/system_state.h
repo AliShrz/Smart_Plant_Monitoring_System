@@ -31,13 +31,13 @@ typedef struct
     bool aht20_init;
     bool bmp280_init;
     bool bh1750_init;
-
 } sensor_status_t;
 
 typedef struct
 {
     bool wifi_init;
     bool wifi_connected;
+    bool wifi_failed;
 } wifi_status_t;
 
 typedef struct
