@@ -44,6 +44,11 @@ void app_main(void)
             .wifi_init = false,
             .wifi_connected = false
         },
+        .cloud = {
+            .cloud_init = false,
+            .cloud_connected = false,
+            .cloud_failed = false
+        },
         .display = {
             .display_init = false
         }

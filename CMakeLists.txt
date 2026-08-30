@@ -31,6 +31,9 @@ set(EXTRA_COMPONENT_DIRS
 
     # Data flow
     components/system_state
+
+    # Cloud
+    components/cloud
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

@@ -42,6 +42,13 @@ typedef struct
 
 typedef struct
 {
+    bool cloud_init;
+    bool cloud_connected;
+    bool cloud_failed;
+} cloud_status_t;
+
+typedef struct
+{
     bool display_init;
     bool display_ui_init;
 } display_status_t;
@@ -57,6 +64,7 @@ typedef struct
     core_status_t core;
     sensor_status_t sensors;
     wifi_status_t wifi;
+    cloud_status_t cloud;
     display_status_t display;
     time_status_t time;
 

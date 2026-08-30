@@ -18,5 +18,6 @@ idf_component_register(
         display_ui
         time
         system_state
+        cloud
 )
 
