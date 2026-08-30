@@ -266,7 +266,7 @@ void app_main(void)
 
     if(system_state.status.display.display_init && !system_state.status.display.display_ui_init)
     {
-        ret = display_ui_init();
+        ret = display_ui_init(&system_state);
         if (ret != ESP_OK)
         {
             ESP_LOGE(TAG, "Failed to initialize display UI: %s", esp_err_to_name(ret));

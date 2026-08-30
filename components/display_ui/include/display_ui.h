@@ -36,8 +36,8 @@
 // } display_ui_data_t;
 
 
-esp_err_t display_ui_init(void);
+esp_err_t display_ui_init(system_state_t *state);
 
 esp_err_t display_ui_show(system_state_t *data);
 
-esp_err_t display_ui_deinit(void);
+esp_err_t display_ui_deinit(system_state_t *state);
