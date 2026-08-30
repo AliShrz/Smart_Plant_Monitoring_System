@@ -24,7 +24,7 @@ In addition, a web dashboard will provide historical data visualization, overall
 
 **Project Stage**
 
-Display UI Development
+Cloud Communication
 
 **Overall Progress**
 
@@ -94,14 +94,16 @@ Display UI Development
 - Golden-ratio based layout
 - Widget spacing and alignment
 
-#### System Data
+#### System State
 
+- Centralized system state structure
 - Centralized system data structure
+- Component initialization status tracking
+- Component deinitialization and recovery handling
 - Application data flow
 
 ### In Progress
 
-- Application initialization and error handling
 - Cloud communication
 
 ### Planned
@@ -186,7 +188,7 @@ Smart_Plant_Monitoring_System/
 │   ├── wifi/
 │   │   └── wifi_manager/
 │   │
-│   └── system_data/
+│   └── system_state/
 │    
 │
 ├── main/
@@ -256,7 +258,8 @@ idf.py monitor
 * [x] Wi-Fi
 * [x] Display UI
 * [x] Time synchronization
-* [x] System data flow
+* [x] System state and data flow
+* [x] Application error handling
 * [ ] Cloud communication
 
 ## Phase 5 — Dashboard
@@ -291,6 +294,7 @@ idf.py monitor
 | 2026-08 | Implemented modular display UI widgets          |
 | 2026-08 | Added NTP time synchronization                  |
 | 2026-08 | Added system data structure and data flow       |
+| 2026-08 | Implemented application error handling and component recovery |
 
 ---
 
@@ -302,7 +306,10 @@ idf.py monitor
                                   │ owns & updates
                                   ▼
                         ┌───────────────────┐
-                        │   system_data_t   │
+                        │  system_state_t   │
+                        ├───────────────────┤
+                        │ system_data_t     │
+                        │ system_status_t   │
                         └─────────┬─────────┘
                                   │
                          ┌────────┴────────┐
@@ -339,7 +346,7 @@ idf.py monitor
       └────────────────┘                                  │
                                                           ▼
                                                  ┌───────────────────┐
-      ┌────────────────┐                         │   system_data_t   │
+      ┌────────────────┐                         │  system_state_t   │
       │ Time Manager   │──── time / date ───────►│                   │
       └────────────────┘                         └───────────────────┘
 ```
@@ -377,10 +384,14 @@ idf.py monitor
 - RSSI API
 - Internet time and date synchronization
 
-## Application Data
+## Application State
 
-- Centralized system data structure
-- Shared data flow between application and display
+- Centralized system state structure
+- Centralized system data
+- Component initialization status tracking
+- Application data flow
+- Component error handling
+- Component recovery through deinitialization and reinitialization
 
 ---
 # License
