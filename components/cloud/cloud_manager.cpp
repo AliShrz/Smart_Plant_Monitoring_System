@@ -99,3 +99,79 @@
  */
 
 #include "cloud_manager.h"
+
+#include "esp_err.h"
+#include "esp_log.h"
+#include "mqtt_client.h"
+
+static const char *TAG = "cloud_manager";
+
+static esp_mqtt_client_handle_t mqtt_client = NULL;
+
+
+esp_err_t cloud_manager_init(system_state_t *state)
+{
+    if (state == NULL)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    esp_mqtt_client_config_t mqtt_cfg = {};
+
+    mqtt_cfg.broker.address.uri =
+        "mqtt://mqtt.eclipseprojects.io";
+
+    mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
+
+    if (mqtt_client == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to initialize MQTT client");
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG, "MQTT client initialized successfully");
+
+    state->status.cloud.cloud_init = true;
+
+    return ESP_OK;
+}
+
+esp_err_t cloud_manager_connect(system_state_t *state)
+{
+    if (state == NULL)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (!state->status.cloud.cloud_init)
+    {
+        ESP_LOGE(TAG, "Cloud manager is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (mqtt_client == NULL)
+    {
+        ESP_LOGE(TAG, "MQTT client is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    esp_err_t ret = esp_mqtt_client_start(mqtt_client);
+
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to start MQTT client: %s",
+            esp_err_to_name(ret));
+
+        state->status.cloud.cloud_connected = false;
+
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "MQTT client started successfully");
+
+    return ESP_OK;
+}

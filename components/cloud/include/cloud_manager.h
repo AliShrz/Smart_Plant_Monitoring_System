@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CLOUD_MANAGER_H
+#define CLOUD_MANAGER_H
 
 #include "esp_err.h"
 #include "system_state.h"
@@ -7,10 +8,16 @@
 extern "C" {
 #endif
 
-esp_err_t cloud_manager_init(void);
 
-esp_err_t cloud_manager_publish(
-    const system_state_t *state);
+esp_err_t cloud_manager_init(system_state_t *state);
+
+esp_err_t cloud_manager_connect(system_state_t *state);
+
+esp_err_t cloud_manager_publish_state(const system_state_t *state);
+
+esp_err_t cloud_manager_is_connected(void);
+
+esp_err_t cloud_manager_disconnect(void);
 
 esp_err_t cloud_manager_deinit(void);
 
@@ -18,9 +25,4 @@ esp_err_t cloud_manager_deinit(void);
 }
 #endif
 
-esp_err_t cloud_manager_init();
-esp_err_t cloud_manager_connect();
-esp_err_t cloud_manager_publish(const system_data_t *data);
-esp_err_t cloud_manager_is_connected();
-esp_err_t cloud_manager_disconnect();
-esp_err_t cloud_manager_deinit();
+#endif // CLOUD_MANAGER_H
