@@ -11,6 +11,7 @@
 #include "display_ui.h"
 #include "wifi_manager.h"
 #include "time_manager.h"
+#include "cloud_manager.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_event.h"
@@ -20,7 +21,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define SSID "HUAWEI-2.4G-k4JK_ext"
+#define SSID "HUAWEI-2.4G-k4JK_ext"  // HUAWEI-2.4G-k4JK_ext
 #define PASS "3jBc8cpR" // 3jBc8cpR
 
 static const char *TAG = "main";
@@ -142,7 +143,7 @@ void app_main(void)
         system_state.status.display.display_init = true;
     }
 
-
+    // soil moisture initialization
     if (system_state.status.sensors.soil_moisture_init == false)
     {
         ret = soil_moisture_init();
@@ -286,6 +287,39 @@ void app_main(void)
     // int8_t wifi_rssi;
     // char ip_string[16];
     // uint8_t count = 0;
+
+    if (!system_state.status.cloud.cloud_init)
+    {
+        ret = cloud_manager_init(&system_state);
+    
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to initialize cloud manager: %s",
+                esp_err_to_name(ret));
+        }
+    }
+
+    if (!system_state.status.cloud.cloud_connected)
+    {
+        ret = cloud_manager_connect(&system_state);
+    
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to connect to cloud: %s",
+                esp_err_to_name(ret));
+        }
+    }
+    
+    ESP_LOGI(
+        TAG,
+        "Cloud status - init: %d, connected: %d",
+        system_state.status.cloud.cloud_init,
+        system_state.status.cloud.cloud_connected
+        );
 
     while (1)
     {
@@ -441,6 +475,17 @@ void app_main(void)
                     "Time is not synchronized yet.");
             }
         }
+
+
+
+
+        
+        ESP_LOGI(
+            TAG,
+            "Cloud status - init: %d, connected: %d",
+            system_state.status.cloud.cloud_init,
+            system_state.status.cloud.cloud_connected
+            );
 
         /*******************/
 
@@ -644,7 +689,7 @@ void app_main(void)
             }
             else
             {
-                ESP_LOGI(TAG, "Light: %d lux", bh1750_data.lux);
+                ESP_LOGI(TAG, "Light: %.2f lux", bh1750_data.lux);
                 system_state.data.light_lux = bh1750_data.lux;
             }
         }
