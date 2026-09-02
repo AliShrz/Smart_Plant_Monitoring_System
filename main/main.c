@@ -15,14 +15,15 @@
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_event.h"
+
+#include "credentials.h"
 // #include "esp_lcd_panel_ops.h"
 #include "display_font_5x7.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define SSID "HUAWEI-2.4G-k4JK_ext"  // HUAWEI-2.4G-k4JK_ext
-#define PASS "3jBc8cpR" // 3jBc8cpR
+
 
 static const char *TAG = "main";
 
@@ -335,7 +336,7 @@ void app_main(void)
                     TAG,
                     "WiFi is disconnected, attempting to connect...");
                 
-                ret = wifi_manager_connect(SSID, PASS);
+                ret = wifi_manager_connect(WIFI_SSID, WIFI_PASSWORD);
                 
                 if (ret != ESP_OK)
                 {

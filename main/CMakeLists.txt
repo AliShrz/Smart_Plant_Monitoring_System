@@ -4,6 +4,7 @@ idf_component_register(
 
     INCLUDE_DIRS
         "."
+        "../config"
 
     REQUIRES
         display

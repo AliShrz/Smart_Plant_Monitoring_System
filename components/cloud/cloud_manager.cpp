@@ -271,7 +271,7 @@ static cJSON *system_state_to_json(const system_state_t *state)
         cJSON_Delete(root);
         cJSON_Delete(data);
         cJSON_Delete(status);
-        
+
         return nullptr;
     }
 
@@ -321,3 +321,4 @@ static cJSON *system_state_to_json(const system_state_t *state)
 
     return root;
 }
+
