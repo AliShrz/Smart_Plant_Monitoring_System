@@ -110,6 +110,8 @@ static const char *TAG = "cloud_manager";
 
 static esp_mqtt_client_handle_t mqtt_client = NULL;
 
+static const char *MQTT_STATE_TOPIC = "plant/1/state";
+
 static void mqtt_event_handler(
     void *handler_args,
     esp_event_base_t base,
@@ -290,8 +292,10 @@ static cJSON *system_state_to_json(const system_state_t *state)
     cJSON_AddStringToObject(data, "time", state->data.time);
     cJSON_AddNumberToObject(data, "soil_moisture", state->data.soil_moisture_percent);
     cJSON_AddNumberToObject(data, "temperature", state->data.temperature_c);
+    cJSON_AddNumberToObject(data, "humidity", state->data.humidity_percent);
     cJSON_AddNumberToObject(data, "pressure", state->data.pressure_hpa);
     cJSON_AddNumberToObject(data, "light", state->data.light_lux);
+    cJSON_AddNumberToObject(data, "wifi_rssi", state->data.wifi_rssi);
     cJSON_AddStringToObject(data, "wifi_ip", state->data.wifi_ip);
 
     cJSON_AddBoolToObject(core, "i2c_bus_init", state->status.core.i2c_bus_init);
@@ -322,3 +326,74 @@ static cJSON *system_state_to_json(const system_state_t *state)
     return root;
 }
 
+esp_err_t cloud_manager_publish_state(const system_state_t *state)
+{
+    if (state == nullptr)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (mqtt_client == nullptr)
+    {
+        ESP_LOGE(TAG, "MQTT client is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!state->status.cloud.cloud_init)
+    {
+        ESP_LOGE(TAG, "Cloud manager is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (!state->status.cloud.cloud_connected)
+    {
+        ESP_LOGW(TAG, "MQTT is not connected, skipping publish");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    cJSON *root = system_state_to_json(state);
+
+    if (root == nullptr)
+    {
+        ESP_LOGE(TAG, "Failed to convert system state to JSON");
+        return ESP_FAIL;
+    }
+
+    char *payload = cJSON_PrintUnformatted(root);
+
+    if (payload == nullptr)
+    {
+        ESP_LOGE(TAG, "Failed to serialize JSON payload");
+        cJSON_Delete(root);
+        return ESP_ERR_NO_MEM;
+    }
+
+    int msg_id = esp_mqtt_client_publish(
+        mqtt_client,
+        MQTT_STATE_TOPIC,
+        payload,
+        0,
+        1,
+        0);
+
+    free(payload);
+    cJSON_Delete(root);
+
+    if (msg_id < 0)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to publish system state, msg_id: %d",
+            msg_id);
+
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(
+        TAG,
+        "System state published, msg_id: %d",
+        msg_id);
+
+    return ESP_OK;
+}
