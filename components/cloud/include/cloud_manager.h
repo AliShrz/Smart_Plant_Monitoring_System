@@ -15,11 +15,9 @@ esp_err_t cloud_manager_connect(system_state_t *state);
 
 esp_err_t cloud_manager_publish_state(const system_state_t *state);
 
-esp_err_t cloud_manager_is_connected(void);
+esp_err_t cloud_manager_disconnect(system_state_t *state);
 
-esp_err_t cloud_manager_disconnect(void);
-
-esp_err_t cloud_manager_deinit(void);
+esp_err_t cloud_manager_deinit(system_state_t *state);
 
 #ifdef __cplusplus
 }

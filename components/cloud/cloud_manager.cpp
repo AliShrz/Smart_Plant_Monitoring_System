@@ -22,7 +22,7 @@
  * [x] Create cloud_manager component
  * [x] Define cloud_manager.h
  * [x] Implement cloud_manager.cpp
- * [ ] Define cloud manager API
+ * [x] Define cloud manager API
  *     - cloud_manager_init()
  *     - cloud_manager_publish()
  *     - cloud_manager_deinit()
@@ -30,22 +30,22 @@
  * ---------------------------------------------------------------------------
  * Phase 3 — MQTT
  * ---------------------------------------------------------------------------
- * [ ] Add ESP-IDF MQTT dependency
- * [ ] Create MQTT client
- * [ ] Implement MQTT event handling
- * [ ] Handle MQTT connection
- * [ ] Handle MQTT disconnection
- * [ ] Handle MQTT errors
- * [ ] Update cloud status in system_state_t
+ * [x] Add ESP-IDF MQTT dependency
+ * [x] Create MQTT client
+ * [x] Implement MQTT event handling
+ * [x] Handle MQTT connection
+ * [x] Handle MQTT disconnection
+ * [x] Handle MQTT errors
+ * [x] Update cloud status in system_state_t
  *
  * ---------------------------------------------------------------------------
  * Phase 4 — Data Publishing
  * ---------------------------------------------------------------------------
- * [ ] Define MQTT topic structure
- * [ ] Define JSON payload structure
- * [ ] Convert system_state.data to JSON
- * [ ] Publish sensor data
- * [ ] Handle publish failures
+ * [x] Define MQTT topic structure
+ * [x] Define JSON payload structure
+ * [x] Convert system_state.data to JSON
+ * [x] Publish sensor data
+ * [x] Handle publish failures
  *
  * Example topic:
  *
@@ -394,6 +394,99 @@ esp_err_t cloud_manager_publish_state(const system_state_t *state)
         TAG,
         "System state published, msg_id: %d",
         msg_id);
+
+    return ESP_OK;
+}
+
+
+esp_err_t cloud_manager_disconnect(system_state_t *state)
+{
+    if (state == nullptr)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (mqtt_client == nullptr)
+    {
+        ESP_LOGE(TAG, "MQTT client is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (state->status.cloud.cloud_connected == false)
+    {
+        ESP_LOGW(TAG, "MQTT is already disconnected");
+        return ESP_OK;
+    }
+
+    esp_err_t ret = esp_mqtt_client_stop(mqtt_client);
+
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to stop MQTT client: %s",
+            esp_err_to_name(ret));
+
+        return ret;
+    }
+
+    ESP_LOGI(TAG, "MQTT client stopped successfully");
+
+    state->status.cloud.cloud_connected = false;
+
+    state->status.cloud.cloud_failed = false;
+
+    return ESP_OK;
+}
+
+esp_err_t cloud_manager_deinit(system_state_t *state)
+{
+    if (state == nullptr)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (mqtt_client == nullptr)
+    {
+        ESP_LOGE(TAG, "MQTT client is not initialized");
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    if (state->status.cloud.cloud_connected)
+    {
+        ESP_LOGI(TAG, "Disconnecting MQTT client before deinitialization");
+        esp_err_t ret = cloud_manager_disconnect(state);
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to disconnect MQTT client: %s",
+                esp_err_to_name(ret));
+            return ret;
+        }
+    }
+
+    esp_err_t ret = esp_mqtt_client_destroy(mqtt_client);
+
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(
+            TAG,
+            "Failed to destroy MQTT client: %s",
+            esp_err_to_name(ret));
+
+        return ret;
+    }
+
+    mqtt_client = nullptr;
+
+    ESP_LOGI(TAG, "MQTT client destroyed successfully");
+
+    state->status.cloud.cloud_init = false;
+    state->status.cloud.cloud_connected = false;
+    state->status.cloud.cloud_failed = false;
 
     return ESP_OK;
 }

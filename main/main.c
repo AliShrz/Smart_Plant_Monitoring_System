@@ -288,8 +288,7 @@ void app_main(void)
     // int8_t wifi_rssi;
     // char ip_string[16];
     // uint8_t count = 0;
-
-    if (!system_state.status.cloud.cloud_init)
+    if (system_state.status.wifi.wifi_connected)
     {
         ret = cloud_manager_init(&system_state);
     
@@ -300,27 +299,25 @@ void app_main(void)
                 "Failed to initialize cloud manager: %s",
                 esp_err_to_name(ret));
         }
-    }
-
-    if (!system_state.status.cloud.cloud_connected)
-    {
-        ret = cloud_manager_connect(&system_state);
-    
-        if (ret != ESP_OK)
+        else
         {
-            ESP_LOGE(
-                TAG,
-                "Failed to connect to cloud: %s",
-                esp_err_to_name(ret));
+            ret = cloud_manager_connect(&system_state);
+        
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to connect to cloud: %s",
+                    esp_err_to_name(ret));
+            }
         }
     }
-    
-    ESP_LOGI(
-        TAG,
-        "Cloud status - init: %d, connected: %d",
-        system_state.status.cloud.cloud_init,
-        system_state.status.cloud.cloud_connected
-        );
+    else
+    {
+        ESP_LOGW(
+            TAG,
+            "Wi-Fi is not connected, skipping cloud initialization");
+    }
 
     while (1)
     {
