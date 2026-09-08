@@ -291,7 +291,7 @@ void app_main(void)
     if (system_state.status.wifi.wifi_connected)
     {
         ret = cloud_manager_init(&system_state);
-    
+
         if (ret != ESP_OK)
         {
             ESP_LOGE(
@@ -302,7 +302,7 @@ void app_main(void)
         else
         {
             ret = cloud_manager_connect(&system_state);
-        
+
             if (ret != ESP_OK)
             {
                 ESP_LOGE(
@@ -624,9 +624,9 @@ void app_main(void)
             else
             {
                 ESP_LOGI(TAG, "Temperature: %.2f°C", bmp280_data.temperature);
-                ESP_LOGI(TAG, "Pressure: %.2f hPa", bmp280_data.pressure);
+                ESP_LOGI(TAG, "Pressure: %.2f hPa", (bmp280_data.pressure / 100.0f));
                 system_state.data.temperature_c = bmp280_data.temperature;
-                system_state.data.pressure_hpa = bmp280_data.pressure;
+                system_state.data.pressure_hpa = (bmp280_data.pressure / 100.0f);
             }
         }
         else
@@ -712,6 +712,44 @@ void app_main(void)
         
         }
 
+        if (system_state.status.wifi.wifi_connected &&
+            !system_state.status.cloud.cloud_init)
+        {
+            ret = cloud_manager_init(&system_state);
+        
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to initialize cloud manager: %s",
+                    esp_err_to_name(ret));
+            }
+            else
+            {
+                ret = cloud_manager_connect(&system_state);
+            
+                if (ret != ESP_OK)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to connect to cloud: %s",
+                        esp_err_to_name(ret));
+                }
+            }
+        }
+
+        if (system_state.status.cloud.cloud_connected)
+        {
+            ret = cloud_manager_publish_state(&system_state);
+        
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to publish system state: %s",
+                    esp_err_to_name(ret));
+            }
+        }
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
