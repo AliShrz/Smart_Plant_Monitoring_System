@@ -46,7 +46,7 @@ static const char *TAG = "wifi_manager";
 #define WIFI_CONNECTED_BIT    BIT0
 #define WIFI_FAIL_BIT         BIT1
 
-#define WIFI_MAX_RETRY          5
+#define WIFI_MAX_RETRY          20
 #define WIFI_INVALID_RSSI    (-128)
 
 // Private Helpers
@@ -94,12 +94,19 @@ static esp_err_t wifi_manager_destroy_event_group(void)
     return ESP_OK;
 }
 
-esp_err_t wifi_manager_init(void)
+esp_err_t wifi_manager_init(system_state_t *state)
 {
     // Check initialized
     if (wifi.initialized)
     {
         return ESP_ERR_INVALID_STATE;
+    }
+
+    // Validate the input system state pointer
+    if (state == NULL)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
     }
 
     // Create Event Group
@@ -121,7 +128,7 @@ esp_err_t wifi_manager_init(void)
             WIFI_EVENT,
             WIFI_EVENT_STA_DISCONNECTED,
             wifi_manager_event_handler,
-            NULL,
+            state,
             &wifi.wifi_event_instance),
             TAG,
             "Failed to register Wi-Fi event handler");
@@ -131,7 +138,7 @@ esp_err_t wifi_manager_init(void)
             IP_EVENT,
             IP_EVENT_STA_GOT_IP,
             wifi_manager_event_handler,
-            NULL,
+            state,
             &wifi.ip_event_instance),
             TAG,
             "Failed to register IP event handler");
@@ -153,7 +160,7 @@ static void wifi_manager_event_handler(
     int32_t event_id,
     void *event_data)
 {
-    (void)arg;
+    system_state_t *state = (system_state_t *)arg;
 
     if (event_base == IP_EVENT &&
         event_id == IP_EVENT_STA_GOT_IP)
@@ -170,6 +177,10 @@ static void wifi_manager_event_handler(
         xEventGroupSetBits(
             wifi.event_group_handle,
             WIFI_CONNECTED_BIT);
+
+        state->status.wifi.wifi_connecting = false;
+        state->status.wifi.wifi_connected = true;
+        state->status.wifi.wifi_failed = false;
 
         ESP_LOGI(
             TAG,
@@ -222,6 +233,9 @@ static void wifi_manager_event_handler(
 
         wifi.retry_count = 0;
         wifi.reconnect_enabled = false;
+        state->status.wifi.wifi_connecting = false;
+        state->status.wifi.wifi_connected = false;
+        state->status.wifi.wifi_failed = true;
 
         ESP_LOGE(
             TAG,
@@ -230,15 +244,26 @@ static void wifi_manager_event_handler(
     }
 }
 
-esp_err_t wifi_manager_connect(const char *ssid, const char *password)
+esp_err_t wifi_manager_connect(
+    const char *ssid,
+    const char *password,
+    system_state_t *state)
 {
     if (!wifi.initialized)
     {
+        ESP_LOGE(TAG, "Wi-Fi manager is not initialized");
         return ESP_ERR_INVALID_STATE;
+    }
+
+    if (state == NULL)
+    {
+        ESP_LOGE(TAG, "Invalid system state pointer");
+        return ESP_ERR_INVALID_ARG;
     }
 
     if (ssid == NULL || password == NULL)
     {
+        ESP_LOGE(TAG, "SSID or password is NULL");
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -246,16 +271,19 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
 
     if (strlen(ssid) >= sizeof(config.sta.ssid))
     {
+        ESP_LOGE(TAG, "SSID is too long");
         return ESP_ERR_INVALID_ARG;
     }
 
     if (strlen(password) >= sizeof(config.sta.password))
     {
+        ESP_LOGE(TAG, "Password is too long");
         return ESP_ERR_INVALID_ARG;
     }
 
     if (ssid[0] == '\0')
     {
+        ESP_LOGE(TAG, "SSID is empty");
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -271,7 +299,15 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
 
     ESP_LOGI(TAG, "Connecting to \"%s\"...", ssid);
 
-    /* Start a new connection attempt */
+    /*
+     * Start a new connection cycle.
+     * The event handler will clear this flag when the connection
+     * succeeds or the maximum number of retries is reached.
+     */
+    state->status.wifi.wifi_connecting = true;
+    state->status.wifi.wifi_connected = false;
+    state->status.wifi.wifi_failed = false;
+
     xEventGroupClearBits(
         wifi.event_group_handle,
         WIFI_CONNECTED_BIT | WIFI_FAIL_BIT);
@@ -285,7 +321,7 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
 
     wifi.reconnect_enabled = true;
     wifi.retry_count = 0;
-    
+
     esp_err_t err = esp_wifi_connect();
 
     if (err != ESP_OK)
@@ -294,6 +330,16 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
             TAG,
             "Failed to start connection: %s",
             esp_err_to_name(err));
+
+        /*
+         * No Wi-Fi event may be generated for this failure,
+         * so the connection attempt must be marked as finished here.
+         */
+        state->status.wifi.wifi_connecting = false;
+        state->status.wifi.wifi_connected = false;
+        state->status.wifi.wifi_failed = true;
+
+        wifi.reconnect_enabled = false;
 
         return err;
     }
@@ -308,18 +354,27 @@ esp_err_t wifi_manager_connect(const char *ssid, const char *password)
     if (bits & WIFI_CONNECTED_BIT)
     {
         ESP_LOGI(TAG, "Successfully connected");
-
         return ESP_OK;
     }
 
     if (bits & WIFI_FAIL_BIT)
     {
-        ESP_LOGE(TAG, "Failed to connect to \"%s\"", ssid);
+        ESP_LOGE(
+            TAG,
+            "Failed to connect to \"%s\"",
+            ssid);
 
         return ESP_FAIL;
     }
 
-    ESP_LOGE(TAG, "Connection timed out");
+    /*
+     * The wait timed out, but the Wi-Fi manager may still be
+     * performing its retry cycle. Therefore, do not change
+     * wifi_connecting here.
+     */
+    ESP_LOGW(
+        TAG,
+        "Connection attempt is still in progress");
 
     return ESP_ERR_TIMEOUT;
 }

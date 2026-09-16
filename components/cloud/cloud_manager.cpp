@@ -65,9 +65,9 @@
  * ---------------------------------------------------------------------------
  * Phase 5 — Application Integration
  * ---------------------------------------------------------------------------
- * [ ] Integrate cloud_manager into main.c
- * [ ] Initialize Cloud Manager after required prerequisites are ready
- * [ ] Publish data from the application loop
+ * [x] Integrate cloud_manager into main.c
+ * [x] Initialize Cloud Manager after required prerequisites are ready
+ * [x] Publish data from the application loop
  * [ ] Coordinate MQTT state with Wi-Fi state
  * [ ] Handle MQTT recovery
  * [ ] Support deinitialization and reinitialization after failure
@@ -75,10 +75,10 @@
  * ---------------------------------------------------------------------------
  * Phase 6 — Testing
  * ---------------------------------------------------------------------------
- * [ ] Build successfully
- * [ ] Connect ESP32 to Wi-Fi
- * [ ] Connect to MQTT broker
- * [ ] Publish sensor data
+ * [x] Build successfully
+ * [x] Connect ESP32 to Wi-Fi
+ * [x] Connect to MQTT broker
+ * [x] Publish sensor data
  * [ ] Verify received messages
  * [ ] Test Wi-Fi disconnection
  * [ ] Test Wi-Fi reconnection
@@ -310,6 +310,7 @@ static cJSON *system_state_to_json(const system_state_t *state)
 
     cJSON_AddBoolToObject(wifi, "wifi_init", state->status.wifi.wifi_init);
     cJSON_AddBoolToObject(wifi, "wifi_connected", state->status.wifi.wifi_connected);
+    cJSON_AddBoolToObject(wifi, "wifi_connecting", state->status.wifi.wifi_connecting);
     cJSON_AddBoolToObject(wifi, "wifi_failed", state->status.wifi.wifi_failed);
 
     cJSON_AddBoolToObject(cloud, "cloud_init", state->status.cloud.cloud_init);

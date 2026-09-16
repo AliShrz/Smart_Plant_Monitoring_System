@@ -39,6 +39,7 @@ typedef struct
 {
     bool wifi_init;
     bool wifi_connected;
+    bool wifi_connecting;
     bool wifi_failed;
 } wifi_status_t;
 

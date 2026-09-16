@@ -4,6 +4,8 @@
 #include "esp_netif_ip_addr.h"
 #include "esp_err.h"
 
+#include "system_state.h"
+
 /*
 Public API
 ──────────
@@ -18,9 +20,9 @@ wifi_manager_deinit()
 
 
 
-esp_err_t wifi_manager_init(void);
+esp_err_t wifi_manager_init(system_state_t *state);
 
-esp_err_t wifi_manager_connect(const char *ssid, const char *password);
+esp_err_t wifi_manager_connect(const char *ssid, const char *password, system_state_t *state);
 
 esp_err_t wifi_manager_disconnect(void);
 
