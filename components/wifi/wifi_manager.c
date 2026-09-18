@@ -196,9 +196,22 @@ static void wifi_manager_event_handler(
 
         if (!wifi.reconnect_enabled)
         {
+            state->status.wifi.wifi_connecting = false;
+            state->status.wifi.wifi_connected = false;
+            state->status.wifi.wifi_failed = false;
+
             ESP_LOGI(TAG, "Wi-Fi disconnected");
             return;
         }
+
+        /*
+         * Wi-Fi is disconnected, but the manager is going to
+         * retry the connection.
+         */
+
+        state->status.wifi.wifi_connecting = true;
+        state->status.wifi.wifi_connected = false;
+        state->status.wifi.wifi_failed = false;
 
         if (wifi.retry_count < WIFI_MAX_RETRY)
         {
@@ -330,6 +343,10 @@ esp_err_t wifi_manager_connect(
             TAG,
             "Failed to start connection: %s",
             esp_err_to_name(err));
+
+        xEventGroupSetBits(
+            wifi.event_group_handle,
+            WIFI_FAIL_BIT);
 
         /*
          * No Wi-Fi event may be generated for this failure,

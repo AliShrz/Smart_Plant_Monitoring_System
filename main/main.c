@@ -23,7 +23,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-
+#define WIFI_RECONNECT_DELAY_MS 30000
 
 static const char *TAG = "main";
 
@@ -264,6 +264,8 @@ void app_main(void)
     bmp280_data_t bmp280_data;
     bh1750_data_t bh1750_data;
 
+    static TickType_t wifi_next_retry_time = 0;
+
     if(system_state.status.display.display_init)
     {
         display_fill(COLOR_BLACK); // Draw a blank bitmap (black screen)
@@ -341,6 +343,51 @@ void app_main(void)
                 ESP_LOGI(
                     TAG,
                     "WiFi is disconnected, attempting to connect...");
+                
+                ret = wifi_manager_connect(
+                    WIFI_SSID,
+                    WIFI_PASSWORD,
+                    &system_state);
+                
+                if (ret != ESP_OK &&
+                    ret != ESP_ERR_TIMEOUT)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to start WiFi connection: %s",
+                        esp_err_to_name(ret));
+                }
+            }
+        
+            /*
+             * After all Wi-Fi connection attempts fail, wait before
+             * starting a new connection cycle.
+             */
+            if (system_state.status.wifi.wifi_failed &&
+                wifi_next_retry_time == 0)
+            {
+                wifi_next_retry_time =
+                    xTaskGetTickCount() +
+                    pdMS_TO_TICKS(WIFI_RECONNECT_DELAY_MS);
+            
+                ESP_LOGW(
+                    TAG,
+                    "WiFi connection failed. Retrying in %d seconds.",
+                    WIFI_RECONNECT_DELAY_MS / 1000);
+            }
+        
+            /*
+             * Start a new connection cycle after the retry delay.
+             */
+            if (system_state.status.wifi.wifi_failed &&
+                wifi_next_retry_time != 0 &&
+                xTaskGetTickCount() >= wifi_next_retry_time)
+            {
+                wifi_next_retry_time = 0;
+            
+                ESP_LOGI(
+                    TAG,
+                    "Starting a new WiFi connection cycle");
                 
                 ret = wifi_manager_connect(
                     WIFI_SSID,
