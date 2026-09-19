@@ -12,9 +12,9 @@ Each plant is equipped with an ESP32-based sensor node that periodically measure
 - Atmospheric pressure
 - Ambient light intensity
 
-The collected data is transmitted over Wi-Fi to a cloud backend for storage and analysis.
+The collected data is transmitted over Wi-Fi using MQTT to an MQTT broker for cloud communication. A dedicated backend for data storage, analysis, and dashboard visualization is planned.
 
-A dedicated ESP32 display node retrieves the latest measurements from the cloud and presents them on an LCD, allowing quick access to the status of every plant without requiring a computer or smartphone.
+A dedicated ESP32 display node will retrieve measurements from the backend and present them on an LCD, allowing quick access to the status of every plant without requiring a computer or smartphone.
 
 In addition, a web dashboard will provide historical data visualization, overall plant health monitoring, and intelligent recommendations based on the collected sensor data.
 
@@ -117,8 +117,7 @@ Cloud Communication
 
 ### In Progress
 
-- Local MQTT infrastructure
-- NanoPi MQTT broker
+- NanoPi-based MQTT infrastructure
 - MQTT failure and recovery testing
 
 ### Planned
@@ -277,15 +276,25 @@ idf.py monitor
 * [x] Time synchronization
 * [x] System state and data flow
 * [x] Application error handling
-* [ ] Cloud communication
+* [x] MQTT cloud communication
+* [x] Wi-Fi disconnect and reconnect handling
 
-## Phase 5 — Dashboard
+## Phase 5 — Local Cloud Infrastructure
 
-* [ ] Cloud backend
-* [ ] Historical data
-* [ ] Multiple plant monitoring
-* [ ] Real-time monitoring
-* [ ] Plant health suggestions
+- [ ] NanoPi setup
+- [ ] MQTT broker
+- [ ] ESP32 → NanoPi communication
+- [ ] MQTT failure and recovery testing
+- [ ] MQTT publish failure testing
+- [ ] Sensor failure isolation testing
+
+## Phase 6 — Dashboard
+
+- [ ] Cloud backend
+- [ ] Historical data
+- [ ] Multiple plant monitoring
+- [ ] Real-time monitoring
+- [ ] Plant health suggestions
 
 ---
 
@@ -312,49 +321,72 @@ idf.py monitor
 | 2026-08 | Added NTP time synchronization                  |
 | 2026-08 | Added system data structure and data flow       |
 | 2026-08 | Implemented application error handling and component recovery |
+| 2026-09 | Implemented MQTT cloud communication and JSON state publishing |
+| 2026-09 | Implemented Wi-Fi connection, disconnection, and reconnect handling |
 
 ---
 
 # Architecture
 
 ```text
-                              APPLICATION
-                                  │
-                                  │ owns & updates
-                                  ▼
-                        ┌───────────────────┐
-                        │  system_state_t   │
-                        ├───────────────────┤
-                        │ system_data_t     │
-                        │ system_status_t   │
-                        └─────────┬─────────┘
-                                  │
-              ┌───────────────────┼───────────────────┐
-              │                   │                   │
-              ▼                   ▼                   ▼
-       ┌──────────────┐    ┌──────────────┐   ┌──────────────┐
-       │  Display UI  │    │ Cloud Manager│   │    Sensors   │
-       └──────┬───────┘    └──────┬───────┘   └──────┬───────┘
-              │                   │                   │
-              ▼                   ▼                   │
-       ┌──────────────┐      MQTT Broker             │
-       │ Graphics +   │           │                   │
-       │ Font Engine  │           │                   │
-       └──────┬───────┘           │                   │
-              │                   │                   │
-              ▼                   ▼                   ▼
-         ST7735 LCD          Cloud / Server      Measurements
-
-
-      ┌────────────────┐
-      │ Wi-Fi Manager  │──── connection / RSSI / IP ────►
-      └────────────────┘                                  │
+```text
+                              ESP32 SENSOR NODE
+                                      │
+                                      ▼
+                              ┌───────────────┐
+                              │  APPLICATION  │
+                              │    main.c     │
+                              └───────┬───────┘
+                                      │
+                                      │ owns & updates
+                                      ▼
+                            ┌───────────────────┐
+                            │  system_state_t   │
+                            ├───────────────────┤
+                            │ system_data_t     │
+                            │ system_status_t   │
+                            └─────────┬─────────┘
+                                      │
+                 ┌────────────────────┼────────────────────┐
+                 │                    │                    │
+                 ▼                    ▼                    ▼
+          ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+          │   Sensors    │     │  Display UI  │     │    Cloud     │
+          │              │     │              │     │   Manager    │
+          └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+                 │                    │                    │
+       ┌─────────┼─────────┐          ▼                    │
+       │         │         │   ┌──────────────┐            │
+       ▼         ▼         ▼   │ Graphics +   │            │
+     AHT20    BMP280     BH1750│ Font Engine  │            │
+       │         │         │   └──────┬───────┘            │
+       └─────────┼─────────┘          │                    │
+                 │                    ▼                    │
+                 ▼               ST7735 LCD                │
+        Soil Moisture                                      │
+         (ADC One-Shot)                                    │
+                                                          │
+                                                          │ MQTT
                                                           ▼
-                                                 system_state_t
+                                                   ┌──────────────┐
+                                                   │ MQTT Broker  │
+                                                   └──────────────┘
+
 
       ┌────────────────┐
-      │ Time Manager   │──── time / date ────────────────►
+      │  Wi-Fi Manager │──── connection / RSSI / IP ────► system_state_t
+      └───────┬────────┘
+              │
+              │ Wi-Fi
+              ▼
+         Wi-Fi Network
+
+
+      ┌────────────────┐
+      │  Time Manager  │──── time / date ───────────────► system_state_t
       └────────────────┘
+```
+
 ```
 
 ---
@@ -385,10 +417,14 @@ idf.py monitor
 
 - Wi-Fi Manager
 - Automated reconnect
-- Connection Status
+- Connection status
 - IP address API
 - RSSI API
 - Internet time and date synchronization
+- MQTT client
+- MQTT broker communication
+- JSON state publishing
+- MQTT connection state tracking
 
 ## Application State
 
