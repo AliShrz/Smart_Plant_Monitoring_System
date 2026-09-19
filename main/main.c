@@ -11,17 +11,19 @@
 #include "display_ui.h"
 #include "wifi_manager.h"
 #include "time_manager.h"
+#include "cloud_manager.h"
 #include "nvs_flash.h"
 #include "esp_netif.h"
 #include "esp_event.h"
+
+#include "credentials.h"
 // #include "esp_lcd_panel_ops.h"
 #include "display_font_5x7.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define SSID "HUAWEI-2.4G-k4JK_ext"
-#define PASS "3jBc8cpR" // 3jBc8cpR
+#define WIFI_RECONNECT_DELAY_MS 30000
 
 static const char *TAG = "main";
 
@@ -42,7 +44,14 @@ void app_main(void)
         },
         .wifi = {
             .wifi_init = false,
-            .wifi_connected = false
+            .wifi_connected = false,
+            .wifi_connecting = false,
+            .wifi_failed = false
+        },
+        .cloud = {
+            .cloud_init = false,
+            .cloud_connected = false,
+            .cloud_failed = false
         },
         .display = {
             .display_init = false
@@ -99,7 +108,7 @@ void app_main(void)
 
     if (system_state.status.core.event_loop_init && system_state.status.core.netif_init)
     {
-        ret = wifi_manager_init();
+        ret = wifi_manager_init(&system_state);
         if (ret != ESP_OK)
         {
             ESP_LOGE(TAG, "Failed to initialize WiFi: %s", esp_err_to_name(ret));
@@ -137,7 +146,7 @@ void app_main(void)
         system_state.status.display.display_init = true;
     }
 
-
+    // soil moisture initialization
     if (system_state.status.sensors.soil_moisture_init == false)
     {
         ret = soil_moisture_init();
@@ -255,6 +264,8 @@ void app_main(void)
     bmp280_data_t bmp280_data;
     bh1750_data_t bh1750_data;
 
+    static TickType_t wifi_next_retry_time = 0;
+
     if(system_state.status.display.display_init)
     {
         display_fill(COLOR_BLACK); // Draw a blank bitmap (black screen)
@@ -281,6 +292,36 @@ void app_main(void)
     // int8_t wifi_rssi;
     // char ip_string[16];
     // uint8_t count = 0;
+    if (system_state.status.wifi.wifi_connected)
+    {
+        ret = cloud_manager_init(&system_state);
+
+        if (ret != ESP_OK)
+        {
+            ESP_LOGE(
+                TAG,
+                "Failed to initialize cloud manager: %s",
+                esp_err_to_name(ret));
+        }
+        else
+        {
+            ret = cloud_manager_connect(&system_state);
+
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to connect to cloud: %s",
+                    esp_err_to_name(ret));
+            }
+        }
+    }
+    else
+    {
+        ESP_LOGW(
+            TAG,
+            "Wi-Fi is not connected, skipping cloud initialization");
+    }
 
     while (1)
     {
@@ -290,60 +331,82 @@ void app_main(void)
             system_state.status.wifi.wifi_connected =
                 wifi_manager_is_connected();
         
-            if (!system_state.status.wifi.wifi_connected)
+            /*
+             * Start a new connection cycle only when Wi-Fi is not connected,
+             * no connection attempt is currently in progress,
+             * and the previous connection cycle has not failed.
+             */
+            if (!system_state.status.wifi.wifi_connected &&
+                !system_state.status.wifi.wifi_connecting &&
+                !system_state.status.wifi.wifi_failed)
             {
                 ESP_LOGI(
                     TAG,
                     "WiFi is disconnected, attempting to connect...");
                 
-                ret = wifi_manager_connect(SSID, PASS);
+                ret = wifi_manager_connect(
+                    WIFI_SSID,
+                    WIFI_PASSWORD,
+                    &system_state);
                 
-                if (ret != ESP_OK)
+                if (ret != ESP_OK &&
+                    ret != ESP_ERR_TIMEOUT)
                 {
                     ESP_LOGE(
                         TAG,
-                        "Failed to connect to WiFi: %s",
+                        "Failed to start WiFi connection: %s",
                         esp_err_to_name(ret));
-                    
-                    system_state.status.wifi.wifi_connected = false;
-                    system_state.data.wifi_ip[0] = '\0';
-                }
-                else
-                {
-                    system_state.status.wifi.wifi_connected = true;
-                
-                    ESP_LOGI(
-                        TAG,
-                        "Connected to WiFi");
-                    
-                    /* Get IP address after successful connection */
-                    if (wifi_manager_get_ip(&ip) == ESP_OK)
-                    {
-                        ESP_LOGI(
-                            TAG,
-                            "IP: " IPSTR,
-                            IP2STR(&ip));
-                        
-                        esp_ip4addr_ntoa(
-                            &ip,
-                            system_state.data.wifi_ip,
-                            sizeof(system_state.data.wifi_ip));
-                    }
-                    else
-                    {
-                        ESP_LOGE(
-                            TAG,
-                            "Failed to get IP address");
-                        
-                        system_state.data.wifi_ip[0] = '\0';
-                    }
                 }
             }
-            else
+        
+            /*
+             * After all Wi-Fi connection attempts fail, wait before
+             * starting a new connection cycle.
+             */
+            if (system_state.status.wifi.wifi_failed &&
+                wifi_next_retry_time == 0)
             {
-                /* Wi-Fi is already connected */
-                system_state.status.wifi.wifi_connected = true;
+                wifi_next_retry_time =
+                    xTaskGetTickCount() +
+                    pdMS_TO_TICKS(WIFI_RECONNECT_DELAY_MS);
             
+                ESP_LOGW(
+                    TAG,
+                    "WiFi connection failed. Retrying in %d seconds.",
+                    WIFI_RECONNECT_DELAY_MS / 1000);
+            }
+        
+            /*
+             * Start a new connection cycle after the retry delay.
+             */
+            if (system_state.status.wifi.wifi_failed &&
+                wifi_next_retry_time != 0 &&
+                xTaskGetTickCount() >= wifi_next_retry_time)
+            {
+                wifi_next_retry_time = 0;
+            
+                ESP_LOGI(
+                    TAG,
+                    "Starting a new WiFi connection cycle");
+                
+                ret = wifi_manager_connect(
+                    WIFI_SSID,
+                    WIFI_PASSWORD,
+                    &system_state);
+                
+                if (ret != ESP_OK &&
+                    ret != ESP_ERR_TIMEOUT)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to start WiFi connection: %s",
+                        esp_err_to_name(ret));
+                }
+            }
+        
+            if (system_state.status.wifi.wifi_connected)
+            {
+                /* Wi-Fi is connected */
                 system_state.data.wifi_rssi =
                     wifi_manager_get_rssi();
             
@@ -351,6 +414,28 @@ void app_main(void)
                     TAG,
                     "WiFi connected - RSSI: %d dBm",
                     system_state.data.wifi_rssi);
+                
+                /* Get IP address */
+                if (wifi_manager_get_ip(&ip) == ESP_OK)
+                {
+                    ESP_LOGI(
+                        TAG,
+                        "IP: " IPSTR,
+                        IP2STR(&ip));
+                    
+                    esp_ip4addr_ntoa(
+                        &ip,
+                        system_state.data.wifi_ip,
+                        sizeof(system_state.data.wifi_ip));
+                }
+                else
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to get IP address");
+                    
+                    system_state.data.wifi_ip[0] = '\0';
+                }
             }
         }
         else
@@ -361,6 +446,46 @@ void app_main(void)
             
             system_state.status.wifi.wifi_connected = false;
             system_state.data.wifi_ip[0] = '\0';
+        }
+
+        /********* Cloud Manager **********/
+        if (system_state.status.wifi.wifi_connected &&
+            !system_state.status.cloud.cloud_init)
+        {
+            ret = cloud_manager_init(&system_state);
+        
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to initialize cloud manager: %s",
+                    esp_err_to_name(ret));
+            }
+            else
+            {
+                ret = cloud_manager_connect(&system_state);
+            
+                if (ret != ESP_OK)
+                {
+                    ESP_LOGE(
+                        TAG,
+                        "Failed to connect to cloud: %s",
+                        esp_err_to_name(ret));
+                }
+            }
+        }
+
+        if (system_state.status.cloud.cloud_connected)
+        {
+            ret = cloud_manager_publish_state(&system_state);
+        
+            if (ret != ESP_OK)
+            {
+                ESP_LOGE(
+                    TAG,
+                    "Failed to publish system state: %s",
+                    esp_err_to_name(ret));
+            }
         }
 
 
@@ -436,6 +561,14 @@ void app_main(void)
                     "Time is not synchronized yet.");
             }
         }
+
+        
+        ESP_LOGI(
+            TAG,
+            "Cloud status - init: %d, connected: %d",
+            system_state.status.cloud.cloud_init,
+            system_state.status.cloud.cloud_connected
+            );
 
         /*******************/
 
@@ -576,9 +709,9 @@ void app_main(void)
             else
             {
                 ESP_LOGI(TAG, "Temperature: %.2f°C", bmp280_data.temperature);
-                ESP_LOGI(TAG, "Pressure: %.2f hPa", bmp280_data.pressure);
+                ESP_LOGI(TAG, "Pressure: %.2f hPa", (bmp280_data.pressure / 100.0f));
                 system_state.data.temperature_c = bmp280_data.temperature;
-                system_state.data.pressure_hpa = bmp280_data.pressure;
+                system_state.data.pressure_hpa = (bmp280_data.pressure / 100.0f);
             }
         }
         else
@@ -639,7 +772,7 @@ void app_main(void)
             }
             else
             {
-                ESP_LOGI(TAG, "Light: %d lux", bh1750_data.lux);
+                ESP_LOGI(TAG, "Light: %.2f lux", bh1750_data.lux);
                 system_state.data.light_lux = bh1750_data.lux;
             }
         }
@@ -663,6 +796,7 @@ void app_main(void)
             }
         
         }
+
 
 
         vTaskDelay(pdMS_TO_TICKS(1000));
