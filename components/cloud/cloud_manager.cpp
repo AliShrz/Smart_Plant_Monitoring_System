@@ -68,7 +68,7 @@
  * [x] Integrate cloud_manager into main.c
  * [x] Initialize Cloud Manager after required prerequisites are ready
  * [x] Publish data from the application loop
- * [ ] Coordinate MQTT state with Wi-Fi state
+ * [x] Coordinate MQTT state with Wi-Fi state
  * [ ] Handle MQTT recovery
  * [ ] Support deinitialization and reinitialization after failure
  *
@@ -80,8 +80,8 @@
  * [x] Connect to MQTT broker
  * [x] Publish sensor data
  * [ ] Verify received messages
- * [ ] Test Wi-Fi disconnection
- * [ ] Test Wi-Fi reconnection
+ * [x] Test Wi-Fi disconnection
+ * [x] Test Wi-Fi reconnection
  * [ ] Test MQTT connection failure
  * [ ] Test MQTT publish failure
  * [ ] Verify sensor failures do not break cloud communication
