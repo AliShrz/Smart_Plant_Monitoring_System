@@ -28,7 +28,7 @@ Cloud Communication
 
 **Overall Progress**
 
-🟩🟩🟩🟩🟩🟩🟩⬜⬜⬜
+🟩🟩🟩🟩🟩🟩🟩🟩⬜⬜
 
 ### Completed
 
@@ -102,9 +102,24 @@ Cloud Communication
 - Component deinitialization and recovery handling
 - Application data flow
 
+#### Cloud Communication
+
+- MQTT client
+- MQTT broker connection
+- MQTT connection state tracking
+- MQTT disconnection handling
+- MQTT automatic reconnect
+- JSON serialization of system state
+- Sensor data publishing
+- QoS 1 publishing
+- Publish failure handling
+- Cloud connection state tracking
+
 ### In Progress
 
-- Cloud communication
+- Local MQTT infrastructure
+- NanoPi MQTT broker
+- MQTT failure and recovery testing
 
 ### Planned
 
@@ -173,6 +188,8 @@ Smart_Plant_Monitoring_System/
 |   ├── bus/
 │   │   └── i2c_bus/
 │   │
+│   ├── cloud/
+│   │
 |   ├── display/
 │   ├── display_ui/
 │   │
@@ -183,19 +200,19 @@ Smart_Plant_Monitoring_System/
 │   │   └── bh1750/
 │   │
 │   ├── time/
-│   │   └── time_manager/
-│   │
 │   ├── wifi/
-│   │   └── wifi_manager/
-│   │
 │   └── system_state/
-│    
+│
+├── config/
+│   ├── credentials.h
+│   └── credentials.example.h   
 │
 ├── main/
 │   └── main.c
 │
 ├── CMakeLists.txt
 ├── sdkconfig
+├── dependencies.lock
 └── README.md
 ```
 
@@ -312,43 +329,32 @@ idf.py monitor
                         │ system_status_t   │
                         └─────────┬─────────┘
                                   │
-                         ┌────────┴────────┐
-                         │                 │
-                       reads             reads
-                         │                 │
-                         ▼                 ▼
-                 ┌──────────────┐   ┌──────────────┐
-                 │  Display UI  │   │ Cloud Backend│
-                 │              │   │   (planned)  │
-                 └──────┬───────┘   └──────────────┘
-                        │
-                        ▼
-                 ┌──────────────┐
-                 │   Graphics   │
-                 │  + Font      │
-                 └──────┬───────┘
-                        │
-                        ▼
-                    ST7735 LCD
-
-
-      ┌────────────────┐
-      │ Sensor Drivers │
-      └───────┬────────┘
-              │
-              │ measurements
-              ▼
-         APPLICATION
+              ┌───────────────────┼───────────────────┐
+              │                   │                   │
+              ▼                   ▼                   ▼
+       ┌──────────────┐    ┌──────────────┐   ┌──────────────┐
+       │  Display UI  │    │ Cloud Manager│   │    Sensors   │
+       └──────┬───────┘    └──────┬───────┘   └──────┬───────┘
+              │                   │                   │
+              ▼                   ▼                   │
+       ┌──────────────┐      MQTT Broker             │
+       │ Graphics +   │           │                   │
+       │ Font Engine  │           │                   │
+       └──────┬───────┘           │                   │
+              │                   │                   │
+              ▼                   ▼                   ▼
+         ST7735 LCD          Cloud / Server      Measurements
 
 
       ┌────────────────┐
       │ Wi-Fi Manager  │──── connection / RSSI / IP ────►
       └────────────────┘                                  │
                                                           ▼
-                                                 ┌───────────────────┐
-      ┌────────────────┐                         │  system_state_t   │
-      │ Time Manager   │──── time / date ───────►│                   │
-      └────────────────┘                         └───────────────────┘
+                                                 system_state_t
+
+      ┌────────────────┐
+      │ Time Manager   │──── time / date ────────────────►
+      └────────────────┘
 ```
 
 ---
