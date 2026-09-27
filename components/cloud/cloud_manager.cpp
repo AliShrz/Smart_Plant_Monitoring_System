@@ -157,6 +157,18 @@ esp_err_t cloud_manager_init(system_state_t *state)
     mqtt_cfg.broker.address.uri =
         "mqtt://broker.hivemq.com:1883";
 
+    mqtt_cfg.session.last_will.topic =
+        "plant/1/status";
+    
+    mqtt_cfg.session.last_will.msg =
+        "{\"cloud_connected\":false}";
+    
+    mqtt_cfg.session.last_will.msg_len = 0;
+    
+    mqtt_cfg.session.last_will.qos = 1;
+    
+    mqtt_cfg.session.last_will.retain = 0;
+
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
 
     if (mqtt_client == NULL)
@@ -164,6 +176,7 @@ esp_err_t cloud_manager_init(system_state_t *state)
         ESP_LOGE(TAG, "Failed to initialize MQTT client");
         return ESP_FAIL;
     }
+
 
     esp_err_t ret = esp_mqtt_client_register_event(
         mqtt_client,
