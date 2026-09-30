@@ -294,7 +294,7 @@ void app_main(void)
     // uint8_t count = 0;
     if (system_state.status.wifi.wifi_connected)
     {
-        ret = cloud_manager_init(&system_state);
+        ret = cloud_manager_init(&system_state, MQTT_BROKER_URI, MQTT_USERNAME, MQTT_PASSWORD);
 
         if (ret != ESP_OK)
         {
@@ -452,7 +452,7 @@ void app_main(void)
         if (system_state.status.wifi.wifi_connected &&
             !system_state.status.cloud.cloud_init)
         {
-            ret = cloud_manager_init(&system_state);
+            ret = cloud_manager_init(&system_state, MQTT_BROKER_URI, MQTT_USERNAME, MQTT_PASSWORD);
         
             if (ret != ESP_OK)
             {

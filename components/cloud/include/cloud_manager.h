@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 
-esp_err_t cloud_manager_init(system_state_t *state);
+esp_err_t cloud_manager_init(system_state_t *state, const char *broker_uri, const char *username, const char *password);
 
 esp_err_t cloud_manager_connect(system_state_t *state);
 

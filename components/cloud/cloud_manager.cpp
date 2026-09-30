@@ -144,9 +144,13 @@ static void mqtt_event_handler(
 
 
 
-esp_err_t cloud_manager_init(system_state_t *state)
+esp_err_t cloud_manager_init(
+    system_state_t *state, 
+    const char *broker_uri, 
+    const char *username, 
+    const char *password)
 {
-    if (state == NULL)
+    if (state == NULL || broker_uri == NULL || username == NULL || password == NULL)
     {
         ESP_LOGE(TAG, "Invalid system state pointer");
         return ESP_ERR_INVALID_ARG;
@@ -154,19 +158,14 @@ esp_err_t cloud_manager_init(system_state_t *state)
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
-    mqtt_cfg.broker.address.uri =
-        "mqtt://broker.hivemq.com:1883";
+    mqtt_cfg.broker.address.uri = broker_uri;
+    mqtt_cfg.credentials.username = username;
+    mqtt_cfg.credentials.authentication.password = password;
 
-    mqtt_cfg.session.last_will.topic =
-        "plant/1/status";
-    
-    mqtt_cfg.session.last_will.msg =
-        "{\"cloud_connected\":false}";
-    
+    mqtt_cfg.session.last_will.topic = "plant/1/status";
+    mqtt_cfg.session.last_will.msg = "{\"cloud_connected\":false}";
     mqtt_cfg.session.last_will.msg_len = 0;
-    
     mqtt_cfg.session.last_will.qos = 1;
-    
     mqtt_cfg.session.last_will.retain = 0;
 
     mqtt_client = esp_mqtt_client_init(&mqtt_cfg);
