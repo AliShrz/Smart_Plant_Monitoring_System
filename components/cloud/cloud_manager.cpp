@@ -162,8 +162,8 @@ esp_err_t cloud_manager_init(
     mqtt_cfg.credentials.username = username;
     mqtt_cfg.credentials.authentication.password = password;
 
-    mqtt_cfg.session.last_will.topic = "plant/1/status";
-    mqtt_cfg.session.last_will.msg = "{\"cloud_connected\":false}";
+    mqtt_cfg.session.last_will.topic = "plant/1/state";
+    mqtt_cfg.session.last_will.msg = "{\"status\":{\"cloud\":{\"cloud_connected\":false}}}";
     mqtt_cfg.session.last_will.msg_len = 0;
     mqtt_cfg.session.last_will.qos = 1;
     mqtt_cfg.session.last_will.retain = 0;
